@@ -1,0 +1,34 @@
+<html>
+	<title>Something something</title>
+
+
+    <script id="vert1" type="x-shader/x-vertex" >
+	    attribute vec4 vPosition;
+        uniform mat4 moveMatrix;
+        uniform mat4 camMatrix;
+        attribute vec4 vColor;
+        varying vec4 v_color;
+	    void main()
+	    {
+		    gl_Position = camMatrix * moveMatrix*vPosition;
+          //  gl_Position.z =gl_Position.z*0.01; //Use in case lines or triangles disapear due to clipping
+            v_color = vColor; //we just forward the color to the fragment shader
+	    }
+    </script>
+    <script id="frag1" type="x-shader/x-fragment" >
+	    precision mediump float;
+        varying vec4 v_color;
+	    void main()
+	    {
+		    gl_FragColor = v_color;
+	    }
+    </script>
+<body>
+	<canvas id='draw_area' height="512" width="512" />
+    <script src="../angel_common/initShaders.js"></script>
+    <script src="../angel_common/webgl-utils.js"></script>
+    <script src="../angel_common/MV.js"></script>
+    <script src="ws3_part1.js"></script>
+</body>
+
+</html>
