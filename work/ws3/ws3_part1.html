@@ -11,7 +11,7 @@
 	    void main()
 	    {
 		    gl_Position = camMatrix * moveMatrix*vPosition;
-          //  gl_Position.z =gl_Position.z*0.01; //Use in case lines or triangles disapear due to clipping
+            gl_Position.z =gl_Position.z*0.6; //Use in case lines or triangles disapear due to clipping in z-direction
             v_color = vColor; //we just forward the color to the fragment shader
 	    }
     </script>

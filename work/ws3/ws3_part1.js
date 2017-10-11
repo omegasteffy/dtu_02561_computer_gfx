@@ -108,6 +108,7 @@ function cube(gl, drawtype)
 	const NEG = -.5;
 	const POS =  .5;
 	x.vertices = [
+		// To make it easier to grasp the placement, we have some beautyful 3D-ascii
 		//                  5-------6
 		//                 /|      /|
 		//                / |     / |
@@ -175,13 +176,13 @@ function setup_stuff() {
 	cubeSpec = cube(gl, gl_drawtype.LINES); //Hereby we have created a unit-size cube positioned in 
 	moveCube = translate(0.5, 0.5, 0.5); // used for moving from current center of 0,0,0 to corner being at 0 and diagonal at 1.0
 
-	let eye = vec3(0.5, 0.5, 1.5); //in order to center the camera in front of the cube 
-	let upVec = vec3(0.0, 1.0, 0.0);
-	let cameraTarget = vec3(0.5, 0.5, -1.0);// and we look on to the front surface of the cube
+	let eye = vec3(1.0, 1.0, 1.0); //We put camera in corner in order to make the isometric view
+	let upVec = vec3(0.0, 1.0, 0.0);//we just need the orientation... it will adjust itself
+	let cameraTarget = vec3(0.0, 0.0, 0.0);// for isometric we should look at origo
+
 	cameraMatrix = lookAt(eye, cameraTarget, upVec);
-	//cameraMatrix = mat4(1);
 	//gl.enable(gl.DEPTH_TEST);
-	gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order
+	gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
 	let locMoveMat = gl.getUniformLocation(program, "moveMatrix");
 	gl.uniformMatrix4fv(locMoveMat,false, flatten(moveCube));
