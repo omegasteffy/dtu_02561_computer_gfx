@@ -1,0 +1,2 @@
+What do affine mean (in relation to Affine transformations)
+Cull, the act of ignoring triangles/faces not facing user
