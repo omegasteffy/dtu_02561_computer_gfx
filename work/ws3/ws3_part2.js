@@ -149,7 +149,23 @@ function coordinateSystem(gl)
 	x.drawCount = x.points.length;
 	return x;
 }
-
+function send_array_to_buffer(buffername, input_data, data_dimension, gl, program) {
+	let buffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, buffer); // make it the current buffer assigned in WebGL
+	gl.bufferData(gl.ARRAY_BUFFER, flatten(input_data), gl.STATIC_DRAW);//link the JS-points and the 
+	let attribLocation = gl.getAttribLocation(program, buffername); // setup a pointer to match the 
+	gl.vertexAttribPointer(attribLocation, data_dimension, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(attribLocation);
+}
+function cacheUniformLocations(gl, program) {
+	const activeUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+	const uniformLocations = {};
+	for (let i = 0; i < activeUniforms; i++) {
+		const info = gl.getActiveUniform(program, i);
+		uniformLocations[info.name] = gl.getUniformLocation(program, info.name);
+	}
+	return uniformLocations;
+}
 
 function setup_stuff() {
 	console.trace("Started");
@@ -159,14 +175,14 @@ function setup_stuff() {
 	gl = WebGLUtils.setupWebGL(canvas);
 	program = initShaders(gl, "vert1", "frag1");
 	gl.useProgram(program);
+	uniforms = cacheUniformLocations(gl, program);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
 
 	cubeSpec = cube(gl, gl_drawtype.LINES); //Hereby we have created a unit-size cube positioned in 
-	moveCube = mat4();translate(0.5,.50, .50); // used for moving from current center of 0,0,0 to corner being at 0 and diagonal at 1.0
+	moveCube = mat4(); translate(0.5, .50, .50); // used for moving from current center of 0,0,0 to corner being at 0 and diagonal at 1.0
 	coordinateSys = coordinateSystem(gl);
-	//moveCube = mult(rotCube);
 
 	let eye = vec3(1.2, 3.2, 3.0); //We put camera in corner in order to make the isometric view
 	let upVec = vec3(0.0, 1.0, 0.0);//we just need the orientation... it will adjust itself
@@ -174,38 +190,31 @@ function setup_stuff() {
 
 	cameraMatrix = lookAt(eye, cameraTarget, upVec);
 
-	let near = 2.0;//vec3(1.0, 1.0, 1.0);
-	let far = 200.0;//vec3(1.0, 1.0, 1.0);
-	let perMatrix = perspective(45, 1.0, near, far);
-	let cameraMatrix2 = mult(perMatrix ,cameraMatrix);
-	//	gl.enable(gl.DEPTH_TEST);
+	let FieldOfViewY = 45; //deg
+	let AspectRatio = (canvas.width / canvas.height); //should be 1.0
+	let near = 2.0;
+	let far = 200.0;
+	let perMatrix = perspective(FieldOfViewY, AspectRatio, near, far);
+	//gl.enable(gl.DEPTH_TEST);
 	//gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
-	let locMoveMat = gl.getUniformLocation(program, "moveMatrix");
-	gl.uniformMatrix4fv(locMoveMat,false, flatten(moveCube));
+	gl.uniformMatrix4fv(uniforms.moveMatrix, false, flatten(moveCube));
+	gl.uniformMatrix4fv(uniforms.camMatrix, false, flatten(cameraMatrix));
+	gl.uniformMatrix4fv(uniforms.pMatrix, false, flatten(perMatrix));
 
-	let locCamMat = gl.getUniformLocation(program, "camMatrix");
-	gl.uniformMatrix4fv(locCamMat, false, flatten(cameraMatrix));
+	gl.clear(gl.COLOR_BUFFER_BIT);
 
-
-	let locPerMat = gl.getUniformLocation(program, "pMatrix");
-	gl.uniformMatrix4fv(locPerMat, false, flatten(perMatrix));
-	let allpoints = coordinateSys.points.concat(cubeSpec.points);
-	let allColors = coordinateSys.colors.concat(cubeSpec.colors);
-
-	let point_buffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, point_buffer); // make it the current buffer assigned in WebGL
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(allpoints), gl.STATIC_DRAW);//link the JS-points and the 
-	let vPos = gl.getAttribLocation(program, "vPosition"); // setup a pointer to match the 
-	gl.vertexAttribPointer(vPos, 3, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(vPos);
-
-	var color_buffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer); // make it the current buffer assigned in WebGL
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(allColors), gl.STATIC_DRAW);//link the JS-points and the 
-	let vCol = gl.getAttribLocation(program, "vColor"); // setup a pointer to match the 
-	gl.vertexAttribPointer(vCol, 4, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(vCol);
+	{
+		moveCube = mat4(); translate(0.5, .50, .50); 
+		send_array_to_buffer("vPosition", coordinateSys.points, 3, gl, program);
+		send_array_to_buffer("vColor", coordinateSys.colors, 4, gl, program);
+		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
+	}
+	{
+		send_array_to_buffer("vPosition", cubeSpec.points, 3, gl, program);
+		send_array_to_buffer("vColor", cubeSpec.colors, 4, gl, program);
+		gl.drawArrays(cubeSpec.drawtype, 0, cubeSpec.drawCount);
+	}
 
 	requestAnimationFrame(render); 
 }
@@ -213,7 +222,7 @@ setup_stuff();
 
 function render()
 {
-	gl.clear(gl.COLOR_BUFFER_BIT);
-	gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount + cubeSpec.drawCount);
+
+
 	//requestAnimationFrame(render); 
 }
