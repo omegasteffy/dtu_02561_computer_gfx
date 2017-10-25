@@ -171,7 +171,7 @@ function setup_stuff() {
 	gl.useProgram(program);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
-
+	projMatrix = mat4();
 
 	cubeSpec = cube(gl, gl_drawtype.LINES); //Hereby we have created a unit-size cube positioned in 
 	moveCube = translate(0.5, 0.5, 0.5); // used for moving from current center of 0,0,0 to corner being at 0 and diagonal at 1.0
@@ -181,6 +181,8 @@ function setup_stuff() {
 	let cameraTarget = vec3(0.0, 0.0, 0.0);// for isometric we should look at origo
 
 	cameraMatrix = lookAt(eye, cameraTarget, upVec);
+	projMatrix = ortho(-1, 1, -1, 1,0.0, 2.5); //This will be a plane located at the cameraposition and with the "lookAt" direction.
+
 	//gl.enable(gl.DEPTH_TEST);
 	gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
@@ -189,6 +191,10 @@ function setup_stuff() {
 
 	let locCamMat = gl.getUniformLocation(program, "camMatrix");
 	gl.uniformMatrix4fv(locCamMat, false, flatten(cameraMatrix));
+
+
+	let locProjMat = gl.getUniformLocation(program, "projMatrix");
+	gl.uniformMatrix4fv(locProjMat, false, flatten(projMatrix));
 
 	var point_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, point_buffer); // make it the current buffer assigned in WebGL
