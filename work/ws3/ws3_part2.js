@@ -72,8 +72,8 @@ function cube(gl, drawtype)
 
 	let x = { "type": "cube" };
 
-	const NEG = 0;
-	const POS =  1;
+	const NEG = -.5;
+	const POS =  .5;
 	x.vertices = [
 		// To make it easier to grasp the placement, we have some beautyful 3D-ascii
 		//                  5-------6
@@ -184,9 +184,9 @@ function setup_stuff() {
 	moveCube = mat4(); translate(0.5, .50, .50); // used for moving from current center of 0,0,0 to corner being at 0 and diagonal at 1.0
 	coordinateSys = coordinateSystem(gl);
 
-	let eye = vec3(1.2, 3.2, 3.0); //We put camera in corner in order to make the isometric view
+	let eye = vec3(0.0, 0.0, 8.0); //We put camera in corner in order to make the isometric view
 	let upVec = vec3(0.0, 1.0, 0.0);//we just need the orientation... it will adjust itself
-	let cameraTarget = vec3(0.0, 0.0, -1.0);// for isometric we should look at origo
+	let cameraTarget = vec3(0.0, 0.0, 0.0);// for isometric we should look at origo
 
 	cameraMatrix = lookAt(eye, cameraTarget, upVec);
 
@@ -195,8 +195,9 @@ function setup_stuff() {
 	let near = 2.0;
 	let far = 200.0;
 	let perMatrix = perspective(FieldOfViewY, AspectRatio, near, far);
-	//gl.enable(gl.DEPTH_TEST);
-	//gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
+
+	gl.enable(gl.DEPTH_TEST);
+	gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
 	gl.uniformMatrix4fv(uniforms.moveMatrix, false, flatten(moveCube));
 	gl.uniformMatrix4fv(uniforms.camMatrix, false, flatten(cameraMatrix));
@@ -205,12 +206,32 @@ function setup_stuff() {
 	gl.clear(gl.COLOR_BUFFER_BIT);
 
 	{
-		moveCube = mat4(); translate(0.5, .50, .50); 
+		moveCube = mat4(); //no translate applied 
 		send_array_to_buffer("vPosition", coordinateSys.points, 3, gl, program);
 		send_array_to_buffer("vColor", coordinateSys.colors, 4, gl, program);
 		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
 	}
-	{
+
+	{// 1 point perspective have to be centered
+		moveCube = translate(0.0, 0.0, .00);
+		gl.uniformMatrix4fv(uniforms.moveMatrix, false, flatten(moveCube));
+		send_array_to_buffer("vPosition", cubeSpec.points, 3, gl, program);
+		send_array_to_buffer("vColor", cubeSpec.colors, 4, gl, program);
+		gl.drawArrays(cubeSpec.drawtype, 0, cubeSpec.drawCount);
+	}
+	{// 2 point perspective is just moved to the right
+		moveCube = translate(1.5, 0.0, .00);
+		gl.uniformMatrix4fv(uniforms.moveMatrix, false, flatten(moveCube));
+		send_array_to_buffer("vPosition", cubeSpec.points, 3, gl, program);
+		send_array_to_buffer("vColor", cubeSpec.colors, 4, gl, program);
+		gl.drawArrays(cubeSpec.drawtype, 0, cubeSpec.drawCount);
+	}
+
+	{// 3 point perspective is the general case, we get it by moving left + a bit of rotation
+		moveCube = translate(-1.5, 0.0, .00);
+		let rotateMat = mult(rotateX(-30), rotateY(30));
+		moveCube = mult(moveCube, rotateMat );
+		gl.uniformMatrix4fv(uniforms.moveMatrix, false, flatten(moveCube));
 		send_array_to_buffer("vPosition", cubeSpec.points, 3, gl, program);
 		send_array_to_buffer("vColor", cubeSpec.colors, 4, gl, program);
 		gl.drawArrays(cubeSpec.drawtype, 0, cubeSpec.drawCount);
