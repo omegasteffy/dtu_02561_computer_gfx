@@ -1,0 +1,33 @@
+<html>
+	<title>Something something</title>
+
+
+    <script id="vert1" type="x-shader/x-vertex" >
+	    attribute vec4 vPosition;
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_transform_Matrix;
+        attribute vec4 vColor;
+        varying vec4 v_color;
+	    void main()
+	    {
+		    gl_Position = proj_transform_Matrix* trsMatrix *vPosition;
+            v_color = vColor;
+	    }
+    </script>
+    <script id="frag1" type="x-shader/x-fragment" >
+	    precision mediump float;
+        varying vec4 v_color;
+	    void main()
+	    {
+		    gl_FragColor = v_color;
+	    }
+    </script>
+<body>
+	<canvas id='draw_area' height="512" width="512" />
+    <script src="../angel_common/initShaders.js"></script>
+    <script src="../angel_common/webgl-utils.js"></script>
+    <script src="../angel_common/MV.js"></script>
+    <script src="ws4_part2.js"></script>
+</body>
+
+</html>

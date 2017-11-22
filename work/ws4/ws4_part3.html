@@ -1,0 +1,66 @@
+<html>
+	<title>Something something</title>
+
+
+    <script id="vert1" type="x-shader/x-vertex" >
+	    attribute vec4 vertexPos;
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_transform_Matrix;
+        attribute vec4 vColor;
+        varying vec4 color_to_frag;
+        varying vec3 N,L,E;
+        uniform vec4 lightPos;
+
+	    void main()
+	    {
+            vec4 vNormal = vertexPos; // only valid because it is a sphere
+            vec3 vertex_world_pos = (trsMatrix*vertexPos).xyz;
+            vec3 light = lightPos.xyz;
+            L = normalize( light - vertex_world_pos ); //direction toward light from the vertex
+            E = -vertex_world_pos; //away from the vertex toward origo
+            N = normalize((trsMatrix*vNormal).xyz); //normalized Normal vector
+		    gl_Position = proj_transform_Matrix* trsMatrix *vertexPos;
+    
+            color_to_frag = vColor;
+	    }
+    </script>
+    <script id="frag1" type="x-shader/x-fragment" >
+	    precision mediump float;
+
+        varying vec3 N,L,E;
+        uniform vec4 specularColor;
+        uniform vec4 diffuseColor;
+        uniform vec4 ambientColor;
+
+	    void main()
+	    {
+            vec4  fColor;
+            float shinyness = 0.5;
+            
+            //calculation of diffuse light intensity is simply the dot-product
+            float Kd = max(dot(L,N),0.0); // but never negative
+            vec4  diffuse = Kd * diffuseColor;
+
+            //calculation of specular light is 
+            vec3  H = normalize(L+E);
+            float Ks = pow( max(dot(N,H),0.0) , shinyness);
+            vec4  specular = Ks* specularColor;
+            
+            if( dot(L,N) < 0.0 )
+            {
+               specular  = vec4(0.0 , 0.0 , 0.0 , 1.0);
+            }
+            gl_FragColor = ambientColor + diffuse + specular;
+            gl_FragColor.a = 1.0;
+            
+	    }
+    </script>
+<body>
+	<canvas id='draw_area' height="512" width="512" />
+    <script src="../angel_common/initShaders.js"></script>
+    <script src="../angel_common/webgl-utils.js"></script>
+    <script src="../angel_common/MV.js"></script>
+    <script src="ws4_part3.js"></script>
+</body>
+
+</html>
