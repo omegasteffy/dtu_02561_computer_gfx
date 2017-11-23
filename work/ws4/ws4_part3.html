@@ -5,21 +5,25 @@
     <script id="vert1" type="x-shader/x-vertex" >
 	    attribute vec4 vertexPos;
         uniform mat4 trsMatrix;
-        uniform mat4 proj_transform_Matrix;
+        uniform mat4 proj_Matrix;
+        uniform mat4 camera_Matrix;
         attribute vec4 vColor;
         varying vec4 color_to_frag;
         varying vec3 N,L,E;
         uniform vec4 lightPos;
+        uniform vec4 lightDirection;
 
 	    void main()
 	    {
             vec4 vNormal = vertexPos; // only valid because it is a sphere
-            vec3 vertex_world_pos = (trsMatrix*vertexPos).xyz;
-            vec3 light = lightPos.xyz;
-            L = normalize( light - vertex_world_pos ); //direction toward light from the vertex
-            E = -vertex_world_pos; //away from the vertex toward origo
-            N = normalize((trsMatrix*vNormal).xyz); //normalized Normal vector
-		    gl_Position = proj_transform_Matrix* trsMatrix *vertexPos;
+            vNormal.w = 0.0;
+            vec3 vertex_eyePos_pos = (camera_Matrix*trsMatrix*vertexPos).xyz;
+            vec3 light = (camera_Matrix*lightPos).xyz;
+            L = normalize( light - vertex_eyePos_pos ); //direction toward light from the vertex
+          //  L = normalize( camera_Matrix*lightDirection ).xyz; //direction toward light from the vertex
+            E = -vertex_eyePos_pos; //away from the vertex toward origo
+            N = normalize((camera_Matrix*trsMatrix*vNormal).xyz); //normalized Normal vector
+		    gl_Position = proj_Matrix* camera_Matrix*trsMatrix *vertexPos;
     
             color_to_frag = vColor;
 	    }
@@ -34,23 +38,26 @@
 
 	    void main()
 	    {
+            vec3 N_norm=normalize(N);
+            vec3 L_norm=normalize(L);
+            vec3 E_norm=normalize(E);
             vec4  fColor;
-            float shinyness = 0.5;
+            float shinyness = 20.0;
             
             //calculation of diffuse light intensity is simply the dot-product
-            float Kd = max(dot(L,N),0.0); // but never negative
+            float Kd = max(dot(L_norm,N_norm),0.0); // but never negative
             vec4  diffuse = Kd * diffuseColor;
 
             //calculation of specular light is 
-            vec3  H = normalize(L+E);
-            float Ks = pow( max(dot(N,H),0.0) , shinyness);
+            vec3  H = normalize(L_norm+E_norm);
+            float Ks = pow( max(dot(N_norm,H),0.0) , shinyness);
             vec4  specular = Ks* specularColor;
             
-            if( dot(L,N) < 0.0 )
+            if( dot(L_norm,N_norm) < 0.0 )
             {
                specular  = vec4(0.0 , 0.0 , 0.0 , 1.0);
             }
-            gl_FragColor = ambientColor + diffuse + specular;
+            gl_FragColor = ambientColor +diffuse + specular;
             gl_FragColor.a = 1.0;
             
 	    }

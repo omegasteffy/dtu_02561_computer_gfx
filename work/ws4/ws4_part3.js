@@ -229,12 +229,14 @@ function setup_stuff() {
 	gl.enable(gl.DEPTH_TEST);
 	gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
-	let proj_transform_Matrix = mult(perMatrix, cameraMatrix);
-	gl.uniformMatrix4fv(uniforms.proj_transform_Matrix, false, flatten(proj_transform_Matrix));
+	//let proj_transform_Matrix = mult(perMatrix, cameraMatrix);
+	gl.uniformMatrix4fv(uniforms.proj_Matrix, false, flatten(perMatrix));
+	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(cameraMatrix));
 
-	let lightDirection = vec3(0, 0, -1);
-	let lightPos = vec4(20, 0,0, 0);
+	let lightDirection = vec4(0, 10000, 0,0);
+	let lightPos = vec4(0, 2,0, 0);
 	gl.uniform4fv(uniforms.lightPos, flatten(lightPos));
+	gl.uniform4fv(uniforms.lightDirection, flatten(lightDirection));
 
 	let specularColor = vec4(0.6, 0.1, 0.1, 1.0);
 	let diffuseColor = vec4(0.1, 0.1, 0.6, 1.0);            
