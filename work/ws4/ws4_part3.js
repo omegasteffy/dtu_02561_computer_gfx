@@ -1,11 +1,12 @@
 /**
  * Global variables
  */
-let cubeSpec; //Specification of the cube containing the vertices
 let coordinateSys;
 let gl;		  //the GL context
 let program;  // the compiled GL-program
 let moveCube; //matrix for positioning the cube
+let sphere1;
+let time = 0;
 
 const gl_drawtype = { "LINES": 0, "TRIANGLES": 1 };
 /**
@@ -55,34 +56,6 @@ const CommonColors = {
 };
 
 function random_color() { return vec4(0.4 + 0.5 * Math.random(), 0.2 + 0.6 * Math.random(), 0.2 + 0.6 * Math.random(), 1.0); }
-
-function tetrahedron(a, b, c, d, n, dest)
-{
-	divideTriangle(a, b, c, n, dest);
-	divideTriangle(d, c, b, n, dest);
-	divideTriangle(a, d, b, n, dest);
-	divideTriangle(a, c, d, n, dest);
-}
-
-function divideTriangle( a , b , c , count ,dest)
-{
-	if (count > 0)
-	{
-		let ab = normalize( mix(a, b, 0.5), true);
-		let ac = normalize( mix(a, c, 0.5), true);
-		let bc = normalize( mix(b, c, 0.5), true);
-		divideTriangle(a, ab, ac, count - 1, dest);
-		divideTriangle(ab, b, bc, count - 1, dest);
-		divideTriangle(bc, c, ac, count - 1, dest);
-		divideTriangle(ab, bc, ac, count - 1, dest);
-	}else{
-		//triangle(a, b, c, dest) ... inlined
-
-		dest.push(a);
-		dest.push(b);
-		dest.push(c);
-	}
-}
 
 /**
  * Creates points for a cube
@@ -195,7 +168,53 @@ function cacheUniformLocations(gl, program) {
 	return uniformLocations;
 }
 
-function setup_stuff() {
+function sphere(subDivision)
+{
+	function tetrahedron(a, b, c, d, n, dest) {
+		divideTriangle(a, b, c, n, dest);
+		divideTriangle(d, c, b, n, dest);
+		divideTriangle(a, d, b, n, dest);
+		divideTriangle(a, c, d, n, dest);
+	}
+
+	function divideTriangle(a, b, c, count, dest) {
+		if (count > 0) {
+			let ab = normalize(mix(a, b, 0.5), true);
+			let ac = normalize(mix(a, c, 0.5), true);
+			let bc = normalize(mix(b, c, 0.5), true);
+			divideTriangle(a, ab, ac, count - 1, dest);
+			divideTriangle(ab, b, bc, count - 1, dest);
+			divideTriangle(bc, c, ac, count - 1, dest);
+			divideTriangle(ab, bc, ac, count - 1, dest);
+		} else {
+			//triangle(a, b, c, dest) ... inlined
+			dest.push(a);
+			dest.push(b);
+			dest.push(c);
+		}
+	}
+
+	let x = {};
+	x.Points = [];
+	x.Normals = [];
+	x.Colors = [];
+	let va = vec4(0.0, 0.0, 1.0, 1.0);
+	let vb = vec4(0.0, 0.942809, -0.33, 1.0);
+	let vc = vec4(-0.816497, -0.471405, -0.33, 1.0);
+	let vd = vec4(0.816497, -0.471405, -0.33, 1.0);
+
+	tetrahedron(va, vb, vc, vd, subDivision, x.Points);
+	for (let n = 0; x.Points.length > n; n++) {
+		//color = 0.5*p + 0.3
+		x.Colors[n] = vec4(0.3 + x.Points[n][0], 0.3 + x.Points[n][1], 0.3 + x.Points[n][2], 1.0);
+		x.Normals[n] = x.Points[n];
+	}
+	return x;
+
+}
+
+function setup_stuff()
+{
 	console.trace("Started");
 
 	//general boiler plate stuff
@@ -206,85 +225,68 @@ function setup_stuff() {
 	uniforms = cacheUniformLocations(gl, program);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-	cubeSpec = cube(gl, gl_drawtype.TRIANGLES); //Hereby we have created a unit-size cube positioned in 
-	moveCube = mat4(); 
+	
 	coordinateSys = coordinateSystem(gl);
+	sphere1 = sphere(3);
+	
+	render();
 
-	let eye = vec3(1.0, 3.0, 5.0); //We put camera in corner in order to make the isometric view
+}
+setup_stuff();
+
+function render()
+{
+	time += 1;
+	let eyePos = vec4(2.0, 3.0, 5.0, 1.0); //We put camera in corner in order to make the isometric view
+	eyePos = mult(rotateY(time * 2), eyePos);
+	eyePos = vec3(eyePos[0], eyePos[1], eyePos[2]);
+	
 	let upVec = vec3(0.0, 1.0, 0.0);//we just need the orientation... it will adjust itself
 	let cameraTarget = vec3(0.0, 0.0, 0.0);// for isometric we should look at origo
 
-	cameraMatrix = lookAt(eye, cameraTarget, upVec);
+	cameraMatrix = lookAt(eyePos, cameraTarget, upVec);
 
-
-
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	let canvas = document.getElementById('draw_area');
 	let FieldOfViewY = 45; //deg
 	let AspectRatio = (canvas.width / canvas.height); //should be 1.0
 	let near = 1.0;
 	let far = 100.0;
 	let perMatrix = perspective(FieldOfViewY, AspectRatio, near, far);
-
 	gl.enable(gl.DEPTH_TEST);
 	gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
-	//let proj_transform_Matrix = mult(perMatrix, cameraMatrix);
 	gl.uniformMatrix4fv(uniforms.proj_Matrix, false, flatten(perMatrix));
 	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(cameraMatrix));
 
-	let lightDirection = vec4(0, 10000, 0,0);
-	let lightPos = vec4(0, 2,0, 0);
-	gl.uniform4fv(uniforms.lightPos, flatten(lightPos));
+	let lightDirection = vec4(0, 0, 1, 0);
+	//let lightPos = vec4(1, 1, 4, 0); // only used if we use directional coordinates
+	//gl.uniform4fv(uniforms.lightPos, flatten(lightPos));
 	gl.uniform4fv(uniforms.lightDirection, flatten(lightDirection));
 
 	let specularColor = vec4(0.6, 0.1, 0.1, 1.0);
-	let diffuseColor = vec4(0.1, 0.1, 0.6, 1.0);            
+	let diffuseColor = vec4(0.1, 0.1, 0.6, 1.0);
 	let ambientColor = vec4(0.15, 0.15, 0.15, 1.0);
 
 	gl.uniform4fv(uniforms.specularColor, flatten(specularColor));
 	gl.uniform4fv(uniforms.diffuseColor, flatten(diffuseColor));
 	gl.uniform4fv(uniforms.ambientColor, flatten(ambientColor));
 
-	let tetraPoints = [];
-	let tetraNormals = [];
-	let tetraColors = [];
-	let va = vec4( 0.0, 0.0, 1.0, 1.0);
-	let vb = vec4(0.0, 0.942809, -0.33,  1.0);
-	let vc = vec4(-0.816497, -0.471405, -0.33, 1.0);
-	let vd = vec4(0.816497, -0.471405, -0.33, 1.0);
-
-	tetrahedron(va, vb, vc, vd, 3, tetraPoints);
-	for (let n = 0; tetraPoints.length > n; n++)
-	{
-		//color = 0.5*p + 0.3
-		tetraColors[n] = vec4(0.3 + tetraPoints[n][0], 0.3 + tetraPoints[n][1], 0.3 + tetraPoints[n][2], 1.0);
-		tetraNormals[n] = tetraPoints[n];
-	}
-
 	{// draw coordinat system
 		trsMatrix = mat4();
 		gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
 		send_array_to_buffer("vertexPos", coordinateSys.points, 3, gl, program);
 		send_array_to_buffer("vColor", coordinateSys.colors, 4, gl, program);
-	gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
+		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
 	}
 
 	{//The sphere
-		trsMatrix = mat4();//rotateX(Math.random() * 45);
+		trsMatrix = mat4();
 		gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
-		send_array_to_buffer("vertexPos", tetraPoints, 4, gl, program);
-		send_array_to_buffer("vColor", tetraColors, 4, gl, program);
-		gl.drawArrays(gl.TRIANGLES, 0, tetraPoints.length);
+		send_array_to_buffer("vertexPos", sphere1.Points, 4, gl, program);
+		send_array_to_buffer("vColor", sphere1.Colors, 4, gl, program);
+		gl.drawArrays(gl.TRIANGLES, 0, sphere1.Points.length);
 	}
 
 	requestAnimationFrame(render); 
-}
-setup_stuff();
-
-function render()
-{
-
-
-	//requestAnimationFrame(render); 
 }
