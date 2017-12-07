@@ -286,6 +286,16 @@ function render()
 	gl.uniform4fv(uniforms.diffuseColor, flatten(diffuseColor));
 	gl.uniform4fv(uniforms.ambientColor, flatten(ambientColor));
 
+	let is_phong_selected = document.getElementById("lightmodel_phong").checked;
+	if (is_phong_selected)
+	{
+		gl.uniform1i(uniforms.normalize_light_param, 1);
+	}
+	else
+	{
+		gl.uniform1i(uniforms.normalize_light_param, 0);
+	}
+
 	gl.uniform1f(uniforms.specular_coef, specular_coef);//;flatten(specular_coef /100));
 	gl.uniform1f(uniforms.diffuse_coef, diffuse_coef);
 	gl.uniform1f(uniforms.ambient_coef, ambient_coef );

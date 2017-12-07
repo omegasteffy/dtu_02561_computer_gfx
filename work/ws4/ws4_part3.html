@@ -42,7 +42,7 @@
             <td>Light calc model</td>
             <td>
                 <input type="radio" name="lightmodel" value="gouraud"> Gouraud
-                <input type="radio" name="lightmodel" value="phong"> Phong
+                <input id="lightmodel_phong"type="radio" name="lightmodel" value="phong"> Phong
             </td>
         </tr>
     </table>
@@ -103,18 +103,22 @@
         uniform float specular_coef;
         uniform float ambient_coef;
         uniform float diffuse_coef;
-
+        uniform bool normalize_light_param;
 
 	    void main()
 	    {
-           // vec3 N_norm=normalize(N);
-            //vec3 L_norm=normalize(L);
-            //vec3 E_norm=normalize(E);
-            vec4  fColor;
-
         vec3 N_norm = N;
         vec3 L_norm = L;
         vec3 E_norm = E;
+        if(normalize_light_param)
+        {
+          N_norm=normalize(N);
+       L_norm=normalize(L);
+       E_norm=normalize(E);
+       }
+            vec4  fColor;
+
+
             
             //calculation of diffuse light intensity is simply the dot-product
             float Kd = max(dot(L_norm,N_norm),0.0); // but never negative
