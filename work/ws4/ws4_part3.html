@@ -34,14 +34,14 @@
         <tr>
             <td>Colorscheme</td>
             <td>
-                <input id="colorscheme_white" type="radio" name="colorscheme" value="white"> White
+                <input id="colorscheme_white" type="radio" name="colorscheme" value="white" checked> White
                 <input type="radio" name="colorscheme" value="different">Blue/Red
             </td>
         </tr>
         <tr>
             <td>Light calc model</td>
             <td>
-                <input type="radio" name="lightmodel" value="gouraud"> Gouraud
+                <input type="radio" name="lightmodel" value="gouraud" checked> Gouraud
                 <input id="lightmodel_phong"type="radio" name="lightmodel" value="phong"> Phong
             </td>
         </tr>
@@ -57,11 +57,11 @@
         document.getElementById(value_id).innerHTML = initial_value;
         document.getElementById(input_id).value = initial_value;
     }
-    link_input_and_text("subdivision_slider", "subdivision_value", 3);
+    link_input_and_text("subdivision_slider", "subdivision_value", 2);
     link_input_and_text("shine_slider", "shine_value", 4);
-    link_input_and_text("specularlight_slider", "specularlight_value", 30);
+    link_input_and_text("specularlight_slider", "specularlight_value", 50);
     link_input_and_text("ambientlight_slider", "ambientlight_value", 40);
-    link_input_and_text("diffuselight_slider", "diffuselight_value",90);
+    link_input_and_text("diffuselight_slider", "diffuselight_value",30);
     
     
     </script>
