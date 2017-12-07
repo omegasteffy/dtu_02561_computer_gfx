@@ -227,7 +227,7 @@ function setup_stuff()
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 	
 	coordinateSys = coordinateSystem(gl);
-	sphere1 = sphere(3);
+	
 	
 	render();
 
@@ -236,6 +236,7 @@ setup_stuff();
 
 function render()
 {
+	sphere1 = sphere(document.getElementById('subdivision_slider').value);
 	time += 1;
 	let eyePos = vec4(2.0, 3.0, 5.0, 1.0); //We put camera in corner in order to make the isometric view
 	eyePos = mult(rotateY(time * 2), eyePos);
@@ -264,13 +265,21 @@ function render()
 	//gl.uniform4fv(uniforms.lightPos, flatten(lightPos));
 	gl.uniform4fv(uniforms.lightDirection, flatten(lightDirection));
 
-	let specularColor = vec4(0.6, 0.1, 0.1, 1.0);
-	let diffuseColor = vec4(0.1, 0.1, 0.6, 1.0);
-	let ambientColor = vec4(0.15, 0.15, 0.15, 1.0);
+	let specularColor = vec4(0.8, 0.1, 0.1, 1.0);
+	let diffuseColor = vec4(0.1, 0.1, 0.8, 1.0);
+	let ambientColor = vec4(0.25, 0.25, 0.25, 1.0);
+	let ambient_coef = document.getElementById("ambientlight_slider").value*.01;
+	let specular_coef = document.getElementById("specularlight_slider").value * .01;
+	let diffuse_coef =document.getElementById("diffuselight_slider").value * .01;
 
 	gl.uniform4fv(uniforms.specularColor, flatten(specularColor));
 	gl.uniform4fv(uniforms.diffuseColor, flatten(diffuseColor));
 	gl.uniform4fv(uniforms.ambientColor, flatten(ambientColor));
+
+	gl.uniform1f(uniforms.specular_coef, specular_coef);//;flatten(specular_coef /100));
+	gl.uniform1f(uniforms.diffuse_coef, diffuse_coef);
+	gl.uniform1f(uniforms.ambient_coef, ambient_coef );
+
 
 	{// draw coordinat system
 		trsMatrix = mat4();
@@ -279,10 +288,11 @@ function render()
 		send_array_to_buffer("vColor", coordinateSys.colors, 4, gl, program);
 		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
 	}
-
+	let shinyness = document.getElementById('shine_slider').value;
 	{//The sphere
 		trsMatrix = mat4();
 		gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
+		gl.uniform1f(uniforms.shinyness, shinyness);
 		send_array_to_buffer("vertexPos", sphere1.Points, 4, gl, program);
 		send_array_to_buffer("vColor", sphere1.Colors, 4, gl, program);
 		gl.drawArrays(gl.TRIANGLES, 0, sphere1.Points.length);
