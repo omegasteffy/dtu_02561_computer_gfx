@@ -263,11 +263,21 @@ function render()
 	let lightDirection = vec4(0, 0, 1, 0);
 	//let lightPos = vec4(1, 1, 4, 0); // only used if we use directional coordinates
 	//gl.uniform4fv(uniforms.lightPos, flatten(lightPos));
+	let is_white_selected = document.getElementById("colorscheme_white").checked;
 	gl.uniform4fv(uniforms.lightDirection, flatten(lightDirection));
-
-	let specularColor = vec4(0.8, 0.1, 0.1, 1.0);
-	let diffuseColor = vec4(0.1, 0.1, 0.8, 1.0);
-	let ambientColor = vec4(0.25, 0.25, 0.25, 1.0);
+	if (is_white_selected) {
+		var diffuseColor = vec4(0.8, 0.8, 0.8, 1.0);
+		var specularColor = vec4(0.8, 0.8, 0.8, 1.0);
+	}
+	else {
+		var diffuseColor = vec4(0.1, 0.1, 0.8, 1.0);
+		var specularColor = vec4(0.8, 0.1, 0.1, 1.0);
+	}
+	let ambientColor = vec4(0.25, 0.25, 0.25, 1.0); //always
+	
+	
+	
+	
 	let ambient_coef = document.getElementById("ambientlight_slider").value*.01;
 	let specular_coef = document.getElementById("specularlight_slider").value * .01;
 	let diffuse_coef =document.getElementById("diffuselight_slider").value * .01;

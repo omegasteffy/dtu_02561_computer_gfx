@@ -2,13 +2,13 @@
 <head>
 </head>
 	<title>Something something</title>
-<h1>hej <!-- tro på det--></h1>
+<h1>hej <!-- ja tro på det - det kommer ikke til at ske--></h1>
 <div id="slidecontainer">
     <table>
         <thead>
             <tr>
                 <td> Triangle -> Sphere subdivisions</td>
-                <td><input type="range" min="1" max="5" id="subdivision_slider"></td>
+                <td><input type="range" min="0" max="5" id="subdivision_slider"></td>
                 <td id="subdivision_value"></td>
             </tr>
             <tr>
@@ -32,9 +32,19 @@
                 <td id="specularlight_value"></td>
             </tr>
         <tr>
-            <td> lightning calc </td><td><input type="radio" name="lightmodel" value="gouraud"> Gouraud
-            <input type="radio" name="gender" value="Phong"> Phong</td>
-            </tr>
+            <td>Colorscheme</td>
+            <td>
+                <input id="colorscheme_white" type="radio" name="colorscheme" value="white"> White
+                <input type="radio" name="colorscheme" value="different">Blue/Red
+            </td>
+        </tr>
+        <tr>
+            <td>Light calc model</td>
+            <td>
+                <input type="radio" name="lightmodel" value="gouraud"> Gouraud
+                <input type="radio" name="lightmodel" value="phong"> Phong
+            </td>
+        </tr>
     </table>
 </div>
 <script> 
@@ -47,7 +57,7 @@
         document.getElementById(value_id).innerHTML = initial_value;
         document.getElementById(input_id).value = initial_value;
     }
-    link_input_and_text("subdivision_slider", "subdivision_value", 4);
+    link_input_and_text("subdivision_slider", "subdivision_value", 3);
     link_input_and_text("shine_slider", "shine_value", 4);
     link_input_and_text("specularlight_slider", "specularlight_value", 30);
     link_input_and_text("ambientlight_slider", "ambientlight_value", 40);
