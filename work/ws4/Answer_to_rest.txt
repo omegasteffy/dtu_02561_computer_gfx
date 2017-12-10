@@ -1,0 +1,32 @@
+Part6)
+a) What is the difference between Phong shading and Phong lighting (the
+Phong reflection model)?
+
+b) What is the difference between flat shading, Gouraud shading, and Phong
+shading? List pros and cons of each.
+Flat shading:
+  Polygon: 1x vertex calculation of light/color is performed and used for all vertexes of the polygon
+  Vertex: Just forward the 1x light calculation
+  Frag: Use the vertex color directly
+
+Gouraud Shading:
+  Vertex: Calculate the 
+
+
+c) What is the difference between a directional light and a point light?
+Directional light is similar to a plane wave, direction is the same across the surface it illuminates
+Point light change its light across the surface, unless it is far away
+
+d) Does the eye position influence the shading of an object in any way?
+The highlights change depending upon eye-position
+
+e) What is the effect of setting the specular term to (0, 0, 0)?
+There is no highlight
+
+f) What is the effect of increasing the shininess exponent (????)?
+When shinyness is small the highlights are "broad"
+When shinyness is large there is only a small spot representing the highlight.
+
+
+g) In what coordinate space did you compute the lighting?
+It must be transformed 
