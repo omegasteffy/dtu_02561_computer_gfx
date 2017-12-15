@@ -1,16 +1,27 @@
 Part6)
-a) What is the difference between Phong shading and Phong lighting (the
-Phong reflection model)?
+a) What is the difference between Phong shading and Phong lighting
+The question was kind of tricky to answer because there are plenty of explanations of both, but seldome as contradictions.
+Phong lightning refers to the model og how reflections can be calculated, based upon a set of vectors.
+Phong shading is the actual implementation. The geometry have been turned into a finite set of vertex's and normal vectors.
+Phong shading are noteworthy for improving implementation results by interpolating normal vector per fragment.
 
 b) What is the difference between flat shading, Gouraud shading, and Phong
 shading? List pros and cons of each.
-Flat shading:
-  Polygon: 1x vertex calculation of light/color is performed and used for all vertexes of the polygon
-  Vertex: Just forward the 1x light calculation
-  Frag: Use the vertex color directly
+Shading types:
+	Flat: We assume the same l, n and v for the entire polygon, i.e. effectively the entire polygon will be the same color. Efficient and easy to spot in 3D games in the early 90's (e.g. StarFox and VirtuaFighter) 
+		Pro: requires less calculations
+		Cons: Objects tend to look blocky (mach bands are highly visible)
 
-Gouraud Shading:
-  Vertex: Calculate the 
+	Gouraud/Smooth: l,n,v is different for each vertex and light is calculated for each vertex. The rasterizer interpolate the light/color for each fragment.
+		Pro: Semi efficent, lightning looks quite good
+		Cons: Specular light do not look good, unless you use a lot of vertexs for objects.
+
+	Phong: l,n,v er calculated for each vertex. The light is calculated for each fragment (from the interpolated l,n,v vectors)
+		Pro: Lightning looks very good, and do not require a high amount of vertexs.
+		Cons: Require more calculation (per fragment calculation of light)
+
+	Bling-Phong (aka modified Phong): Approximation of reflection in Phong, using halfway vector.
+		Rather than calculating the exact reflection from normal and light (r*v), we use norm(l+v)
 
 
 c) What is the difference between a directional light and a point light?
@@ -18,15 +29,16 @@ Directional light is similar to a plane wave, direction is the same across the s
 Point light change its light across the surface, unless it is far away
 
 d) Does the eye position influence the shading of an object in any way?
-The highlights change depending upon eye-position
+The highlights (specular part) change depending upon eye-position
 
 e) What is the effect of setting the specular term to (0, 0, 0)?
 There is no highlight
 
-f) What is the effect of increasing the shininess exponent (????)?
+f) What is the effect of increasing the shininess exponent (alpha)?
 When shinyness is small the highlights are "broad"
 When shinyness is large there is only a small spot representing the highlight.
-
+Do not use a shinyness of less than 1.
 
 g) In what coordinate space did you compute the lighting?
-It must be transformed 
+The vectors for lightning must be transformed into camera/eye-space.
+Hereby the eye vector simply become the negative of vertex-position.
