@@ -24,8 +24,9 @@
 
             vec4 pos_4d; pos_4d.xyz = a_Position.xyz; pos_4d.a=1.0;
             vec4 norm_4d; norm_4d.xyz = a_Normal.xyz; norm_4d.a=1.0;
+            norm_4d.w=0.0; // if you skip this the specular light do not work
 
-            L = normalize( camera_Matrix * lightDirection ).xyz; //light from a distant (only direction)
+            L = normalize( camera_Matrix *trsMatrix* lightDirection ).xyz; //light from a distant (only direction)
             E = -(camera_Matrix*trsMatrix*pos_4d).xyz;
    
             N = normalize((camera_Matrix*trsMatrix*norm_4d).xyz); //normalized Normal vector
@@ -58,7 +59,6 @@
             //calculation of specular light is
             vec3  H = normalize(L_norm+E_norm);//half-way vector?
             float Ks = pow( max(dot(N_norm,H),0.0) , shinyness);
-            //vec4  specular = Ks* specularColor; 
             vec4  specular = Ks* specularColor; 
 
             if( dot(L_norm,N_norm) < 0.0 )
@@ -66,8 +66,7 @@
               specular  = vec4(0.0 , 0.0 , 0.0 , 1.0);
             }
 
-                gl_FragColor = (ambientColor*ambient_coef) +diffuse*diffuse_coef + specular*specular_coef;
-          //  gl_FragColor = specular;//*specular_coef;
+            gl_FragColor = (ambientColor*ambient_coef) +diffuse*diffuse_coef + specular*specular_coef;
             gl_FragColor.a = 1.0;
             if(use_fixed_color)
             {
