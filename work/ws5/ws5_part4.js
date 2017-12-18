@@ -221,21 +221,26 @@ function render() {
 		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
 	}
 	gl.uniform1i(uniforms.use_fixed_color, 0);
-	//let sphere = sphere(3);
-	send_floats_to_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program);
-	send_floats_to_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program);
-	send_floats_to_buffer("a_Color", g_drawingInfo.colors, 4, gl, program);
+	let sphere2Render = sphere(3);
+	//send_floats_to_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program);
+	//send_floats_to_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program);
+	//send_floats_to_buffer("a_Color", g_drawingInfo.colors, 4, gl, program);
 
+	send_floats_to_buffer("a_Position", flatten(sphere2Render.Points), 3, gl, program);
+	send_floats_to_buffer("a_Normal", flatten(sphere2Render.Normals), 3, gl, program);
+	send_floats_to_buffer("a_Color", flatten(sphere2Render.Colors), 4, gl, program);
+	
+	gl.drawArrays(gl.TRIANGLES, 0, sphere2Render.Points.length);
 	// Create an empty buffer object to store Index buffer
-	let index_buffer = gl.createBuffer();
+	//let index_buffer = gl.createBuffer();
 
-	// Bind appropriate array buffer to it
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+	//// Bind appropriate array buffer to it
+	//gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
 
-	// Pass the vertex data to the buffer
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
+	//// Pass the vertex data to the buffer
+	//gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
 
-	// Draw the triangle
-	gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
+	//// Draw the triangle
+	//gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
 	window.requestAnimationFrame(render);
 }
