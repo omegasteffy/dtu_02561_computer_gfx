@@ -26,8 +26,8 @@
             vec4 norm_4d; norm_4d.xyz = a_Normal.xyz; norm_4d.a=1.0;
             norm_4d.w=0.0; // if you skip this the specular light do not work
 
-            L = normalize( camera_Matrix *trsMatrix* lightDirection ).xyz; //light from a distant (only direction)
-            E = -(camera_Matrix*trsMatrix*pos_4d).xyz;
+            L = normalize( camera_Matrix * lightDirection ).xyz; //light from a distant (only direction)
+            E = -(camera_Matrix*trsMatrix*pos_4d).xyz; //Should the TRS matrix be removed ?
    
             N = normalize((camera_Matrix*trsMatrix*norm_4d).xyz); //normalized Normal vector
             v_Color = a_Color;

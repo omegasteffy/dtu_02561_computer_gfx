@@ -176,7 +176,7 @@ function render() {
 	console.log("Rendering OBJ file.");
 	let eyePos = vec4(10.0, 3.0, 5.90, 1.0); 
 	time += 1.0;
-	eyePos = mult(rotateY(time * 2.0), eyePos);
+	eyePos = mult(rotateY(time * .15), eyePos);
 	eyePos = vec3(eyePos[0], eyePos[1], eyePos[2]);
 
 	let upVec = vec3(0.0, 1.0, 0.0);//we just need the orientation... it will adjust itself
@@ -222,7 +222,8 @@ function render() {
 	}
 	gl.uniform1i(uniforms.use_fixed_color, 0);
 	let sphere2Render = sphere(3);
-
+	trsMatrix = mult(rotateZ(time),translate(0, -2, 0));
+	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
 	send_floats_to_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program);
 	send_floats_to_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program);
 	send_floats_to_buffer("a_Color", g_drawingInfo.colors, 4, gl, program);
