@@ -1,12 +1,10 @@
 console.trace("Started");
 let canvas = document.getElementById('draw_area');
-init_stuff();
 var obj_stuff;
 var g_objDoc; // The information of OBJ file
 var g_drawingInfo; // The information for drawing 3D model
-var model;
 var uniforms;
-
+init_stuff();
 
 const CommonColors = {
 	"black": vec4(0.0, 0.0, 0.0, 1.0),
@@ -21,14 +19,6 @@ const CommonColors = {
 	"brown": vec4(0.7, 0.25, .06, 1.0),
 	"light_blue_clearing_color": vec4(0.3921, 0.5843, 0.9294, .10)
 };
-//function send_array_to_buffer(buffername, input_data, data_dimension, gl, program) {
-//	let buffer = gl.createBuffer();
-//	gl.bindBuffer(gl.ARRAY_BUFFER, buffer); // make it the current buffer assigned in WebGL
-//	gl.bufferData(gl.ARRAY_BUFFER, flatten(input_data), gl.STATIC_DRAW);//link the JS-points and the 
-//	let attribLocation = gl.getAttribLocation(program, buffername); // setup a pointer to match the 
-//	gl.vertexAttribPointer(attribLocation, data_dimension, gl.FLOAT, false, 0, 0);
-//	gl.enableVertexAttribArray(attribLocation);
-//}
 
 function send_floats_to_buffer(buffername, input_data, data_dimension, gl, program) {
 	let buffer = gl.createBuffer();
@@ -81,19 +71,14 @@ function init_stuff() {
 	program.a_Position = uniforms.a_Position;
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
-//	gl.enable(gl.DEPTH_TEST);
-	//gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
-	//model = initVertexBuffers(gl, program);
 	obj_stuff = beginReadObj('../models/shark.obj', gl, 1.0, true);
-	
 
-	//render();
-	console.trace("Ended");
+	console.trace("Finished Init");
 	render();
 }
 
-// Read a file
+// Read a file, wih async request
 function beginReadObj(fileName, gl, scale, reverse)
 {
 	var request = new XMLHttpRequest();
@@ -106,7 +91,7 @@ function beginReadObj(fileName, gl, scale, reverse)
 				console.log("Unable to download " + request.responseURL)
 			}
 			else {
-				onReadOBJFile(request.responseText, fileName, gl, scale, reverse);
+				handleFinishedObjFile(request.responseText, fileName, scale, reverse);
 			}
 		}
 	}
@@ -116,8 +101,8 @@ function beginReadObj(fileName, gl, scale, reverse)
 }
 
 
-// OBJ file has been read
-function onReadOBJFile(fileString, fileName, gl, scale, reverse)
+// OBJ file has been read; now parse it
+function handleFinishedObjFile(fileString, fileName, scale, reverse)
 {
 	var objDoc = new OBJDoc(fileName); // Create a OBJDoc object
 	var result = objDoc.parse(fileString, scale, reverse);
@@ -127,6 +112,7 @@ function onReadOBJFile(fileString, fileName, gl, scale, reverse)
 		console.log("OBJ file parsing error.");
 		return;
 	}
+	console.log("Successfully loaded OBJ file.");
 	g_objDoc = objDoc;
 }
 
@@ -137,10 +123,11 @@ function render() {
 		g_drawingInfo = g_objDoc.getDrawingInfo();
 	}
 	if (!g_drawingInfo) {
+		//since we have not yet retrieved data we make sure the callback repeat it self
 		window.requestAnimationFrame(render);
 		return;
 	}
-
+	console.log("Rendering OBJ file.");
 	let eyePos = vec4(10.0, 5.0, 2.90, 1.0); //We put camera in corner in order to make the isometric view
 	//eyePos = mult(rotateY(time * 2), eyePos);
 	eyePos = vec3(eyePos[0], eyePos[1], eyePos[2]);
@@ -160,7 +147,7 @@ function render() {
 	gl.enable(gl.DEPTH_TEST);
 	gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
-	trsMatrix = mat4();
+	trsMatrix = mat4(); // no transformations just yet
 	gl.uniformMatrix4fv(uniforms.proj_Matrix, false, flatten(perMatrix));
 	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(cameraMatrix));
 	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
@@ -173,16 +160,15 @@ function render() {
 		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
 	}
 
-
-
 	send_floats_to_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program);
 	send_floats_to_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program);
 	send_floats_to_buffer("a_Color", g_drawingInfo.colors, 4, gl, program);
+
 	// Create an empty buffer object to store Index buffer
-	let Index_Buffer = gl.createBuffer();
+	let index_buffer = gl.createBuffer();
 
 	// Bind appropriate array buffer to it
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
 
 	// Pass the vertex data to the buffer
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
