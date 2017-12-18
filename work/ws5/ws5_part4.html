@@ -1,0 +1,91 @@
+<html>
+	<title>Something something</title>
+
+
+    <script id="vert1" type="x-shader/x-vertex" >
+	    attribute vec3 a_Position;
+        attribute vec4 a_Color;
+        attribute vec3 a_Normal;
+
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_Matrix;
+        uniform mat4 camera_Matrix;
+        
+        uniform vec4 lightDirection;
+        uniform vec4 lightPos;
+
+        varying vec3 N;
+        varying vec3 L;
+        varying vec3 E;
+        varying vec4 v_Color;
+
+	    void main()
+	    {
+
+            vec4 pos_4d; pos_4d.xyz = a_Position.xyz; pos_4d.a=1.0;
+            vec4 norm_4d; norm_4d.xyz = a_Normal.xyz; norm_4d.a=1.0;
+
+            L = normalize( camera_Matrix * lightDirection ).xyz; //light from a distant (only direction)
+            E = -(camera_Matrix*trsMatrix*pos_4d).xyz;
+   
+            N = normalize((camera_Matrix*trsMatrix*norm_4d).xyz); //normalized Normal vector
+            v_Color = a_Color;
+            gl_Position = proj_Matrix * camera_Matrix * trsMatrix * pos_4d;
+	    }
+    </script>
+    <script id="frag1" type="x-shader/x-fragment" >
+	    precision mediump float;
+        varying vec3 N,L,E;
+        uniform vec4 diffuseColor, ambientColor, specularColor;
+        uniform float shinyness;
+        varying vec4 v_Color;
+        uniform bool use_fixed_color;
+	    void main()
+	    {      
+            float specular_coef = 1.0;
+            float ambient_coef =  1.0;
+            float diffuse_coef = 1.0;
+            bool normalize_light_param = true;
+            
+            vec3 N_norm = normalize(N);
+            vec3 L_norm = normalize(L);
+            vec3 E_norm = normalize(E);
+            
+            //calculation of diffuse light intensity is simply the dot-product
+            float Kd = max(dot(L_norm,N_norm),0.0); // but never negative
+            vec4  diffuse = Kd *v_Color* diffuseColor;
+
+            //calculation of specular light is
+            vec3  H = normalize(L_norm+E_norm);//half-way vector?
+            float Ks = pow( max(dot(N_norm,H),0.0) , shinyness);
+            //vec4  specular = Ks* specularColor; 
+            vec4  specular = Ks* specularColor; 
+
+            if( dot(L_norm,N_norm) < 0.0 )
+            {
+              specular  = vec4(0.0 , 0.0 , 0.0 , 1.0);
+            }
+
+                gl_FragColor = (ambientColor*ambient_coef) +diffuse*diffuse_coef + specular*specular_coef;
+          //  gl_FragColor = specular;//*specular_coef;
+            gl_FragColor.a = 1.0;
+            if(use_fixed_color)
+            {
+                gl_FragColor = v_Color;
+            }
+	    }
+    </script>
+<body>
+	<canvas id='draw_area' height="512" width="512" >
+
+    </canvas>
+    <script src="../angel_common/initShaders.js"></script>
+    <script src="../angel_common/webgl-utils.js"></script>
+    <script src="../angel_common/MV.js"></script>
+    <script src="../other_common/OBJParser.js"></script>
+    <script src="ws5_part4.js"></script>
+
+
+</body>
+
+</html>
