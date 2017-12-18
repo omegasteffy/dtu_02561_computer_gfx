@@ -21,14 +21,14 @@ const CommonColors = {
 	"brown": vec4(0.7, 0.25, .06, 1.0),
 	"light_blue_clearing_color": vec4(0.3921, 0.5843, 0.9294, .10)
 };
-function send_array_to_buffer(buffername, input_data, data_dimension, gl, program) {
-	let buffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, buffer); // make it the current buffer assigned in WebGL
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(input_data), gl.STATIC_DRAW);//link the JS-points and the 
-	let attribLocation = gl.getAttribLocation(program, buffername); // setup a pointer to match the 
-	gl.vertexAttribPointer(attribLocation, data_dimension, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(attribLocation);
-}
+//function send_array_to_buffer(buffername, input_data, data_dimension, gl, program) {
+//	let buffer = gl.createBuffer();
+//	gl.bindBuffer(gl.ARRAY_BUFFER, buffer); // make it the current buffer assigned in WebGL
+//	gl.bufferData(gl.ARRAY_BUFFER, flatten(input_data), gl.STATIC_DRAW);//link the JS-points and the 
+//	let attribLocation = gl.getAttribLocation(program, buffername); // setup a pointer to match the 
+//	gl.vertexAttribPointer(attribLocation, data_dimension, gl.FLOAT, false, 0, 0);
+//	gl.enableVertexAttribArray(attribLocation);
+//}
 
 function send_floats_to_buffer(buffername, input_data, data_dimension, gl, program) {
 	let buffer = gl.createBuffer();
@@ -168,8 +168,8 @@ function render() {
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	coordinateSys = coordinateSystem(gl);
 	{
-		send_array_to_buffer("a_Position", coordinateSys.points, 3, gl, program);
-		send_array_to_buffer("a_Color", coordinateSys.colors, 4, gl, program);
+		send_floats_to_buffer("a_Position",flatten( coordinateSys.points ), 3, gl, program);
+		send_floats_to_buffer("a_Color", flatten( coordinateSys.colors ), 4, gl, program);
 		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
 	}
 
