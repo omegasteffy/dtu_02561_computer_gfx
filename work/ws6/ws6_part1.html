@@ -1,0 +1,37 @@
+<html>
+	<title>Worksheet 6 - Part 1</title>
+
+
+    <script id="vert1" type="x-shader/x-vertex" >
+	    attribute vec4   a_Position;
+     //   uniform float y_offset;
+      //  uniform mat4 trsMatrix;
+      //  uniform mat4 proj_Matrix;
+       // uniform mat4 camera_Matrix;
+	    void main()
+        {
+		   
+		//    gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
+          // gl_Position.y = gl_Position.y + 0.000001 * sin(y_offset);
+        
+            gl_Position = a_Position;
+         //    gl_Position.w = 1.0;
+	    }
+    </script>
+    <script id="frag1" type="x-shader/x-fragment" >
+	    precision mediump float;
+	    void main()
+	    {
+		    gl_FragColor = vec4 (1.0  ,1.0, 1.0, 1.0);
+	    }
+    </script>
+<body>
+	<canvas id='draw_area' height="512" width="512" />
+    <script src="../angel_common/initShaders.js"></script>
+    <script src="../angel_common/webgl-utils.js"></script>
+    <script src="../angel_common/MV.js"></script>
+    <script src="../other_common/helpers.js"></script>
+    <script src="ws6_part1.js"></script>
+</body>
+
+</html>
