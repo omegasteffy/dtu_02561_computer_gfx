@@ -4,25 +4,25 @@
 
     <script id="vert1" type="x-shader/x-vertex" >
 	    attribute vec4   a_Position;
-     //   uniform float y_offset;
-      //  uniform mat4 trsMatrix;
-      //  uniform mat4 proj_Matrix;
-       // uniform mat4 camera_Matrix;
+        attribute vec4   a_Color;
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_Matrix;
+        uniform mat4 camera_Matrix;
+        varying vec4 v_Color;
+
 	    void main()
         {
 		   
-		//    gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
-          // gl_Position.y = gl_Position.y + 0.000001 * sin(y_offset);
-        
-            gl_Position = a_Position;
-         //    gl_Position.w = 1.0;
+		    gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
+            v_Color=   a_Color;
 	    }
     </script>
     <script id="frag1" type="x-shader/x-fragment" >
 	    precision mediump float;
+        varying  vec4   v_Color;
 	    void main()
 	    {
-		    gl_FragColor = vec4 (1.0  ,1.0, 1.0, 1.0);
+            gl_FragColor =v_Color;
 	    }
     </script>
 <body>
