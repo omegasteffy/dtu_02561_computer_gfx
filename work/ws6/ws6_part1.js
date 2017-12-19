@@ -86,10 +86,32 @@ function setup_stuff() {
 	send_array_to_attribute_buffer("a_Color", coordinates.colors, 4, gl, program);
 	gl.drawArrays(coordinates.drawtype, 0, coordinates.drawCount);
 
-	//trsMatrix = scalem(4, 1, 10);
-	//trsMatrix = mult(scalem(4, 1, 10), translate(0, -1, -1));
-	//trsMatrix = translate(0, -1, -10);
-	//gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
+	let texSize = 64;
+	let numRows = 8;
+	let numCols = 8;
+	let index = 0;
+	let image_checker = new Uint8Array(4 /*RGBA*/ * texSize * texSize);
+	for (let i = 0; i < texSize; ++i ) // why not i++; ???
+	{
+		for (let j = 0; j < texSize; ++j)
+		{
+			const patchY = Math.floor(i / (texSize / numRows));
+			const patchX = Math.floor(j / (texSize / numCols));
+			const is_white = (patchX % 2 !== patchY % 2);
+			const color_intensity = is_white ? 255 : 0;
+			
+			image_checker[index++] = color_intensity;
+			image_checker[index++] = color_intensity;
+			image_checker[index++] = color_intensity;
+			image_checker[index++] = 255; //alpha value
+		}
+	}
+
+	//let myTexel = new Image();
+	//myTexel.src = "logo.gif"
+	//gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+	//gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, myTexel);
+
 	send_floats_to_attribute_buffer("a_Position", quadSpec.vertices, 3, gl, program);
 	send_floats_to_attribute_buffer("a_Color", vertice_colors, 4, gl, program);
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, quadSpec.drawCount);
