@@ -4,10 +4,7 @@
  * @param {any} w
  * @param {any} h
  */
-function quad(gl, w, h) {
-	w = w / 2;
-	h = h / 2;
-	z = 0.0;
+function quad(gl) {
 	var x = { "type": "quad" };
 	x.drawtype = gl.TRIANGLE_STRIP;
 	x.vertices = new Float32Array([
@@ -79,7 +76,7 @@ function setup_stuff() {
 			0.0, 1.0, 1.0, 1.0] //Blue
 	);
 
-	quadSpec = quad(gl, 1,1);
+	quadSpec = quad(gl);
 
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	
