@@ -21,7 +21,7 @@ const CommonColors = {
 	"light_blue_clearing_color": vec4(0.3921, 0.5843, 0.9294, .10)
 };
 
-function send_floats_to_buffer(buffername, input_data, data_dimension, gl, program) {
+function send_floats_to_attribute_buffer(buffername, input_data, data_dimension, gl, program) {
 	let buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffer); // make it the current buffer assigned in WebGL
 	gl.bufferData(gl.ARRAY_BUFFER, input_data, gl.STATIC_DRAW);//link the JS-points and the 
@@ -216,17 +216,17 @@ function render() {
 
 	coordinateSys = coordinateSystem(gl);
 	{
-		send_floats_to_buffer("a_Position",flatten( coordinateSys.points ), 3, gl, program);
-		send_floats_to_buffer("a_Color", flatten( coordinateSys.colors ), 4, gl, program);
+		send_floats_to_attribute_buffer("a_Position",flatten( coordinateSys.points ), 3, gl, program);
+		send_floats_to_attribute_buffer("a_Color", flatten( coordinateSys.colors ), 4, gl, program);
 		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
 	}
 	gl.uniform1i(uniforms.use_fixed_color, 0);
 	let sphere2Render = sphere(3);
 	trsMatrix = mult(rotateZ(time),translate(0, -2, 0));
 	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
-	send_floats_to_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program);
-	send_floats_to_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program);
-	send_floats_to_buffer("a_Color", g_drawingInfo.colors, 4, gl, program);
+	send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program);
+	send_floats_to_attribute_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program);
+	send_floats_to_attribute_buffer("a_Color", g_drawingInfo.colors, 4, gl, program);
 
 	//send_floats_to_buffer("a_Position", flatten(sphere2Render.Points), 4, gl, program);
 	//send_floats_to_buffer("a_Normal", flatten(sphere2Render.Normals), 4, gl, program);
