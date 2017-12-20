@@ -235,6 +235,4 @@ function render()
 
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.drawArrays(rectSpec.drawtype, 0, rectSpec.drawCount);
-//	alert("render");
-//	requestAnimationFrame(render); 
 }
