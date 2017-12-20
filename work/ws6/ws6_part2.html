@@ -28,21 +28,42 @@
 	    }
     </script>
 <body>
+    <a href="https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glTexParameter.xml">Explanation of filters</a>
+    <table>
     <tr>
         <td>MinimizeFilter</td>
         <td>
-            <input type="radio" name="MinimizeFilter" value="Linear" checked> Gouraud
-            <input id="lightmodel_phong" type="radio" name="lightmodel" value="phong"> Phong
+            <input type="radio" name="MinimizeFilter" value="Nearest" checked> Nearest | 
+            <input type="radio" name="MinimizeFilter" value="Linear"> Linear | 
+            <input type="radio" name="MinimizeFilter" value="NearestMipMap-Nearest"> NearestMipMap-Nearest | 
+            <input type="radio" name="MinimizeFilter" value="NearestMipMap-Linear"> NearestMipMap-Linear | 
+            <input type="radio" name="MinimizeFilter" value="LinearMipMap-Nearest"> LinearMipMap-Nearest | 
+            <input type="radio" name="MinimizeFilter" value="LinearMipMap-Linear"> LinearMipMap-Linear | 
         </td>
     </tr>
-    <br />
+    
     <tr>
-        <td>MaxmizeFilter</td>
+        <td>MagnificationFilter</td>
         <td>
-            <input type="radio" name="MaxmizeFilter" value="Linear" checked> Gouraud
-            <input id="lightmodel_phong" type="radio" name="lightmodel" value="phong"> Phong
+            <input type="radio" name="MaximizeFilter" value="Nearest" checked> Nearest | 
+            <input type="radio" name="MaximizeFilter" value="Linear"> Linear | 
         </td>
     </tr>
+    <tr>
+        <td>Wrap in S-direction</td>
+        <td>
+            <input type="radio" name="Wrap_S" value="Repeat" checked> Repeat | 
+            <input type="radio" name="Wrap_S" value="Clamp"> Clamp to edge | 
+        </td>
+    </tr>
+    <tr>
+        <td>Wrap in T-direction</td>
+        <td>
+            <input type="radio" name="Wrap_T" value="Repeat" checked> Repeat | 
+            <input type="radio" name="Wrap_T" value="Clamp"> Clamp to edge | 
+        </td>
+    </tr>
+
     </table>
 	<canvas id='draw_area' height="512" width="512" />
     <script src="../angel_common/initShaders.js"></script>

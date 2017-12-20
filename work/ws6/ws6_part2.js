@@ -4,12 +4,17 @@ var gl;
 var program;
 var uniforms;
 
+let min_filter_value = null;
+let max_filter_value = null;
+let wrap_s_value = null;
+let wrap_t_value = null;
+let image_checker = GenerateCheckBoard();
 
 /**
  * Create coordinates for a rectangle
  */
 function rectangle(gl) {
-	var x = { "type": "rectangle" };
+	let x = { "type": "rectangle" };
 	x.drawtype = gl.TRIANGLE_STRIP;
 	x.vertices = new Float32Array([
 		-4, -1, -1,
@@ -21,8 +26,46 @@ function rectangle(gl) {
 	return x;
 }
 
-
-
+function decode_radiobutton_selection()
+{
+	let min_filter_boxes = document.getElementsByName('MinimizeFilter');
+	for(let k = 0; k< min_filter_boxes.length; k++ )
+	{
+		if (min_filter_boxes[k].checked)
+		{
+			min_filter_value = min_filter_boxes[k].value;
+		}
+		min_filter_boxes[k].onclick = render;
+	}
+	let max_filter_boxes = document.getElementsByName('MaximizeFilter');
+	for(let k = 0; k< max_filter_boxes.length; k++ )
+	{
+		if (max_filter_boxes[k].checked)
+		{
+			max_filter_value = max_filter_boxes[k].value;
+		}
+		max_filter_boxes[k].onclick = render
+	}	
+	let wrap_s_boxes = document.getElementsByName("Wrap_S");
+	for(let k = 0; k< wrap_s_boxes.length; k++ )
+	{
+		if (wrap_s_boxes[k].checked)
+		{
+			wrap_s_value = wrap_s_boxes[k].value;
+		}
+		wrap_s_boxes[k].onclick = render
+	}	
+	let wrap_t_boxes = document.getElementsByName("Wrap_T");
+	for(let k = 0; k< wrap_t_boxes.length; k++ )
+	{
+		if (wrap_t_boxes[k].checked)
+		{
+			wrap_t_value = wrap_t_boxes[k].value;
+		}
+		wrap_t_boxes[k].onclick = render
+	}
+	
+}
 function GenerateCheckBoard()
 {
 	let texSize = 64;
@@ -57,10 +100,10 @@ function GenerateCheckBoard()
 }
 setup_stuff();
 
-function setup_stuff()
+function setup_stuff() //all the stuff that are static each time we re-render the scene
 {
 	console.trace("Started");	
-	var canvas = document.getElementById('draw_area');
+	let canvas = document.getElementById('draw_area');
 	gl = WebGLUtils.setupWebGL(canvas);
 
 	program = initShaders(gl, "vert1", "frag1");
@@ -94,7 +137,7 @@ function setup_stuff()
 
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
-	//My layout of coordinates is not accordingly to the book... texture looked really odd before i rotate the points
+		//My layout of coordinates is not accordingly to the book... texture looked really odd before i rotate the points
 	const texCoords = [
 		vec2(-1.5, 0),   //vec2(0,0),
 		vec2(2.5, 0),	//vec2(1,0),
@@ -104,38 +147,94 @@ function setup_stuff()
 
 	rectSpec = rectangle(gl);
 
-	gl.clear(gl.COLOR_BUFFER_BIT);
-
-	let image_checker = GenerateCheckBoard();
-	let texture = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, texture); // make our new texture the current one
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 64, 64, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-		image_checker, 0);
-
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-
-	//It seems that the defaut MIN/MAG-filter setting is to use NEAREST_MIPMAP_LINEAR
-	//gl.generateMipmap(gl.TEXTURE_2D); //MipMap do not work if not enabled, ... and MipMap was default
-	//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_LINEAR);
-	//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
-
-	
 	send_floats_to_attribute_buffer("a_Position", rectSpec.vertices, 3, gl, program);
 	send_floats_to_attribute_buffer("a_texCoordinate", flatten(texCoords), 2, gl, program);
 
-	//Link to the default texture.... however it do not seem to be needed
-	const textureLocation = gl.getUniformLocation(program, "tex");
-	gl.uniform1i(textureLocation, 0);
 
-	gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectSpec.drawCount);
-	//render(); // no need for since we only have a static image
+	render(); 
 }
 
 
 function render()
 {	
-	gl.clear(gl.COLOR_BUFFER_BIT);
+
+	let texture = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, texture); // make our new texture the current one
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 64, 64, 0, gl.RGBA , gl.UNSIGNED_BYTE , image_checker, 0);
+
+	decode_radiobutton_selection();
+	gl.generateMipmap(gl.TEXTURE_2D);
+
+	switch(wrap_s_value)
+	{
+		case "Repeat":
+			gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);
+			break;
+		case "Clamp":
+			gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+			break;
+		default: alert("Unrecognized value for Wrap_s "+ wrap_s_value);
+	}
+	switch(wrap_t_value)
+	{
+		case "Repeat":
+			gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);
+			break;
+		case "Clamp":
+			gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+			break;
+		default: alert("Unrecognized value for Wrap_t "+ wrap_t_value);
+	}
+	switch(min_filter_value)
+	{
+		case "Nearest" :
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			break;
+		case "Linear":
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			break;
+		case "NearestMipMap-Nearest" :
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+			break;
+		case "NearestMipMap-Linear":
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+			break;
+		case "LinearMipMap-Nearest" :
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+			break;
+		case "LinearMipMap-Linear":
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+			break;
+		default:
+			alert("unrecognized value for minification filter");
+	}
+	switch(max_filter_value)
+	{
+		case "Nearest" :
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			break;
+		case "Linear":
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			break;
+		//Not supported for magnification filter
+		// case "MipMap-Nearest" :
+		// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+		// 	break;
+		// case "MipMap-Linear":
+		// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+		// 	break;
+		default:
+			alert("unrecognized value for maxification filter");
+	}
+
+
+
+	//Link to the default texture.... however it do not seem to be needed
+	const textureLocation = gl.getUniformLocation(program, "tex");
+	gl.uniform1i(textureLocation, 0);
+
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.drawArrays(rectSpec.drawtype, 0, rectSpec.drawCount);
-	requestAnimationFrame(render); 
+//	alert("render");
+//	requestAnimationFrame(render); 
 }
