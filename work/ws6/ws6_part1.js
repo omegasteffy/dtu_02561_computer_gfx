@@ -83,11 +83,17 @@ function setup_stuff() {
 	);
 
 	//this layout is not accordingly to the book
+	//const texCoords = [
+	//	vec2(0,0),
+	//	vec2(1,0),
+	//	vec2(0,1),
+	//	vec2(1,1)
+	//];
 	const texCoords = [
-		vec2(0,0),
-		vec2(1,0),
-		vec2(0,1),
-		vec2(1,1)
+		vec2(-1.5, 0),
+		vec2(2.5, 0),
+		vec2(-1.5, 10),
+		vec2(2.5, 10)
 	];
 
 	quadSpec = quad(gl);
