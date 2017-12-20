@@ -1,0 +1,55 @@
+﻿<html>
+	<title>Worksheet 6 - Part 2</title>
+
+
+    <script id="vert1" type="x-shader/x-vertex" >
+	    attribute vec4   a_Position;
+        attribute vec2   a_texCoordinate;
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_Matrix;
+        uniform mat4 camera_Matrix;
+        varying vec2 v_texCoordinate;     
+
+	    void main()
+        {
+
+            gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
+            v_texCoordinate = a_texCoordinate;
+	    }
+    </script>
+    <script id="frag1" type="x-shader/x-fragment" >
+	    precision mediump float;
+        varying  vec2 v_texCoordinate;
+        uniform sampler2D tex;
+        
+	    void main()
+	    {
+            gl_FragColor = texture2D(tex,v_texCoordinate);
+	    }
+    </script>
+<body>
+    <tr>
+        <td>MinimizeFilter</td>
+        <td>
+            <input type="radio" name="MinimizeFilter" value="Linear" checked> Gouraud
+            <input id="lightmodel_phong" type="radio" name="lightmodel" value="phong"> Phong
+        </td>
+    </tr>
+    <br />
+    <tr>
+        <td>MaxmizeFilter</td>
+        <td>
+            <input type="radio" name="MaxmizeFilter" value="Linear" checked> Gouraud
+            <input id="lightmodel_phong" type="radio" name="lightmodel" value="phong"> Phong
+        </td>
+    </tr>
+    </table>
+	<canvas id='draw_area' height="512" width="512" />
+    <script src="../angel_common/initShaders.js"></script>
+    <script src="../angel_common/webgl-utils.js"></script>
+    <script src="../angel_common/MV.js"></script>
+    <script src="../other_common/helpers.js"></script>
+    <script src="ws6_part2.js"></script>
+</body>
+
+</html>
