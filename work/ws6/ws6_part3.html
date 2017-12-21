@@ -2,7 +2,7 @@
 <head>
 </head>
 	<title>Something something</title>
-<h1>hej <!-- ja tro p� det - det kommer ikke til at ske--></h1>
+<h1>Worksheet 6 - Part 3</h1>
 <div id="slidecontainer">
     <table>
         <thead>
@@ -45,6 +45,25 @@
                 <input id="lightmodel_phong"type="radio" name="lightmodel" value="phong"> Phong
             </td>
         </tr>
+        <tr>
+                <td>MinimizeFilter</td>
+                <td>
+                    <input type="radio" name="MinimizeFilter" value="Nearest" checked> Nearest | 
+                    <input type="radio" name="MinimizeFilter" value="Linear"> Linear | 
+                    <input type="radio" name="MinimizeFilter" value="NearestMipMap-Nearest"> NearestMipMap-Nearest | 
+                    <input type="radio" name="MinimizeFilter" value="NearestMipMap-Linear"> NearestMipMap-Linear | 
+                    <input type="radio" name="MinimizeFilter" value="LinearMipMap-Nearest"> LinearMipMap-Nearest | 
+                    <input type="radio" name="MinimizeFilter" value="LinearMipMap-Linear"> LinearMipMap-Linear | 
+                </td>
+            </tr>
+            
+            <tr>
+                <td>MagnificationFilter</td>
+                <td>
+                    <input type="radio" name="MaximizeFilter" value="Nearest" checked> Nearest | 
+                    <input type="radio" name="MaximizeFilter" value="Linear"> Linear | 
+                </td>
+            </tr>
     </table>
 </div>
 <script> 
@@ -58,10 +77,10 @@
         document.getElementById(input_id).value = initial_value;
     }
     link_input_and_text("subdivision_slider", "subdivision_value", 2);
-    link_input_and_text("shine_slider", "shine_value", 4);
+    link_input_and_text("shine_slider", "shine_value", 25);
     link_input_and_text("specularlight_slider", "specularlight_value", 50);
-    link_input_and_text("ambientlight_slider", "ambientlight_value", 40);
-    link_input_and_text("diffuselight_slider", "diffuselight_value",30);
+    link_input_and_text("ambientlight_slider", "ambientlight_value", 30);
+    link_input_and_text("diffuselight_slider", "diffuselight_value",72);
     
     
     </script>
@@ -96,7 +115,7 @@
     </script>
     <script id="frag1" type="x-shader/x-fragment" >
 	    precision mediump float;
-#define M_PI 3.1415926535897932384626433832795
+        #define M_PI 3.1415926535897932384626433832795
         varying vec3 N,L,E;
         uniform vec4 specularColor;
         uniform vec4 diffuseColor;
@@ -108,42 +127,42 @@
         uniform bool normalize_light_param;
         varying vec3 normal_unmodified;
         uniform sampler2D tex;
+        vec2 texel_coord;
+       
 	    void main()
 	    {
         vec3 N_norm = N;
         vec3 L_norm = L;
         vec3 E_norm = E;
+
         if(normalize_light_param)
         {
-          N_norm=normalize(N);
-       L_norm=normalize(L);
-       E_norm=normalize(E);
-       }
-            vec4  fColor;
+            N_norm=normalize(N);
+            L_norm=normalize(L);
+            E_norm=normalize(E);
+        }
+
+        vec4 globe_texel;
+        //calculation of diffuse light intensity is simply the dot-product
+        float Kd = max(dot(L_norm,N_norm),0.0); // but never negative
+        texel_coord.t = acos(normal_unmodified.y)/M_PI;
+        texel_coord.s= (atan(normal_unmodified.x,normal_unmodified.z)+M_PI)/(M_PI+M_PI);
+        globe_texel = texture2D(tex,texel_coord);
+        vec4  diffuse = Kd *globe_texel;
+
+        //calculation of specular light is 
+        vec3  H = normalize(L_norm+E_norm);
+        float Ks = pow( max(dot(N_norm,H),0.0) , shinyness);
+        vec4  specular = Ks* specularColor;
+        
+        if( dot(L_norm,N_norm) < 0.0 )
+        {
+            specular  = vec4(0.0 , 0.0 , 0.0 , 1.0);
+        }
 
 
-            
-            //calculation of diffuse light intensity is simply the dot-product
-            float Kd = max(dot(L_norm,N_norm),0.0); // but never negative
-            vec4  diffuse = Kd * diffuseColor;
-
-            //calculation of specular light is 
-            vec3  H = normalize(L_norm+E_norm);
-            float Ks = pow( max(dot(N_norm,H),0.0) , shinyness);
-            vec4  specular = Ks* specularColor;
-            
-            if( dot(L_norm,N_norm) < 0.0 )
-            {
-               specular  = vec4(0.0 , 0.0 , 0.0 , 1.0);
-            }
-            vec2 texel_coord;
-            texel_coord.t = acos(normal_unmodified.y)/M_PI;
-            texel_coord.s= (atan(normal_unmodified.x,normal_unmodified.z)+M_PI)/(M_PI+M_PI);
-           // gl_FragColor = (ambientColor*ambient_coef) +diffuse*diffuse_coef + specular*specular_coef;
-            gl_FragColor.r = acos(normal_unmodified.y)/M_PI;
-           // gl_FragColor.b = (atan(normal_unmodified.x,normal_unmodified.z)+M_PI)/(M_PI+M_PI);
-            gl_FragColor =  texture2D(tex,texel_coord);
-            gl_FragColor.a = 1.0;
+        gl_FragColor = (globe_texel*ambient_coef) +diffuse*diffuse_coef + specular*specular_coef;
+        gl_FragColor.a = 1.0;
             
 	    }
     </script>
