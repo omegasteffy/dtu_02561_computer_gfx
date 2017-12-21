@@ -56,84 +56,22 @@ const CommonColors = {
 };
 
 function random_color() { return vec4(0.4 + 0.5 * Math.random(), 0.2 + 0.6 * Math.random(), 0.2 + 0.6 * Math.random(), 1.0); }
+var neheTexture;
+function initTexture() {
+neheTexture = gl.createTexture();
+neheTexture.image = new Image();
+neheTexture.image.onload = function() {
+//	handleLoadedTexture(neheTexture)
+}
 
-/**
- * Creates points for a cube
- * positioned at origo, with a size of 1 unit on all sides
- * @param {GL_context} gl
- */
-function cube(gl, drawtype)
-{
-	if ((drawtype != gl_drawtype.LINES) && (drawtype != gl_drawtype.TRIANGLES))
-	{
-		throw ("Unsupported type");
-	}
-	//a cube have 6x-surfaces/faces
-	//hereby we should define 12 triangles or 
-
-	let x = { "type": "cube" };
-
-	const NEG = -.5;
-	const POS =  .5;
-	x.vertices = [
-		// To make it easier to grasp the placement, we have some beautyful 3D-ascii
-		//                  5-------6
-		//                 /|      /|
-		//                / |     / |
-		//               1--|----2  |
-		//               |  4----|--7
-		//               | /     | /
-		//               0-------3
-		vec3(NEG, NEG, POS),//0
-		vec3(NEG, POS, POS),//1
-		vec3(POS, POS, POS),//2
-		vec3(POS, NEG, POS),//3
-		vec3(NEG, NEG, NEG),//4
-		vec3(NEG, POS, NEG),//5
-		vec3(POS, POS, NEG),//6
-		vec3(POS, NEG, NEG),//7
-	];
-	x.col_vertices = [
-		CommonColors.red,//0
-		CommonColors.blue,//1
-		CommonColors.green,//2
-		CommonColors.yellow,//3
-		CommonColors.pink,//4
-		CommonColors.magenta, //5
-		CommonColors.brown, //6
-		CommonColors.lime //7  ...or call random_color()
-	];
-
-	x.face_indicies  =
-	[
-		quad_to_indicies(drawtype, 1, 0, 3, 2),//front
-		quad_to_indicies(drawtype, 2, 3, 7, 6),//right
-		quad_to_indicies(drawtype, 3, 0, 4, 7),//bottom
-		quad_to_indicies(drawtype, 6, 5, 1, 2),//top
-		quad_to_indicies(drawtype, 4, 5, 6, 7),//back
-		quad_to_indicies(drawtype, 5, 4, 0, 1)//right
-	];
-	x.points = []
-	x.colors = []
-	for (let k = 0; k < x.face_indicies.length ; k++)
-	{
-		let current_face = x.face_indicies[k];
-		for (let j = 0; j < current_face.length; j++) {
-			x.points.push(x.vertices[current_face[j]]);
-			x.colors.push(x.col_vertices[current_face[j]]);
-		}
-	}
-	x.drawtype = (gl_drawtype.LINES == drawtype) ? gl.LINES : gl.TRIANGLES;
-	x.drawCount = x.points.length;
-	return x;
+neheTexture.image.src = '../../code_and_data/earth.jpg';
 }
 
 var image = document.createElement('img');
 image.crossorigin = 'anonymous';
 image.src = '../../code_and_data/earth.jpg';
 image.onload = function () {    // Insert WebGL texture initialization here 
-		let canvas = document.getElementById('draw_area');
-		canvas.appendChild(image);
+setup_stuff();
 }; 
 
 
@@ -241,7 +179,7 @@ function setup_stuff()
 	render();
 
 }
-setup_stuff();
+//setup_stuff();
 
 function render()
 {
@@ -309,6 +247,10 @@ function render()
 	gl.uniform1f(uniforms.diffuse_coef, diffuse_coef);
 	gl.uniform1f(uniforms.ambient_coef, ambient_coef );
 
+	let texture = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, texture); // make our new texture the current one
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image);
+	gl.generateMipmap(gl.TEXTURE_2D);
 
 	{// draw coordinat system
 		trsMatrix = mat4();
