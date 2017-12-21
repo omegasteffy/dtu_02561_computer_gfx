@@ -148,7 +148,7 @@
         texel_coord.t = acos(normal_unmodified.y)/M_PI;
         texel_coord.s= (atan(normal_unmodified.x,normal_unmodified.z)+M_PI)/(M_PI+M_PI);
         globe_texel = texture2D(tex,texel_coord);
-        vec4  diffuse = Kd *globe_texel;
+        vec4  diffuse = Kd *diffuseColor*globe_texel;
 
         //calculation of specular light is 
         vec3  H = normalize(L_norm+E_norm);
