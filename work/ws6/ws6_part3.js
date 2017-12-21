@@ -191,54 +191,36 @@ function setup_stuff()
 
 function decode_radiobutton_selection()
 {
+	let changed_settings = false;
 	let min_filter_boxes = document.getElementsByName('MinimizeFilter');
 	for(let k = 0; k< min_filter_boxes.length; k++ )
 	{
-		if (min_filter_boxes[k].checked)
+		if (min_filter_boxes[k].checked && (min_filter_value != min_filter_boxes[k].value))
 		{
 			min_filter_value = min_filter_boxes[k].value;
+			changed_settings = true;
 		}
-		min_filter_boxes[k].onclick = render;
 	}
 	let max_filter_boxes = document.getElementsByName('MaximizeFilter');
 	for(let k = 0; k< max_filter_boxes.length; k++ )
 	{
-		if (max_filter_boxes[k].checked)
+		if (max_filter_boxes[k].checked && (max_filter_value != max_filter_boxes[k].value))
 		{
 			max_filter_value = max_filter_boxes[k].value;
+			changed_settings = true;
 		}
-		max_filter_boxes[k].onclick = render
 	}	
-	let wrap_s_boxes = document.getElementsByName("Wrap_S");
-	for(let k = 0; k< wrap_s_boxes.length; k++ )
-	{
-		if (wrap_s_boxes[k].checked)
-		{
-			wrap_s_value = wrap_s_boxes[k].value;
-		}
-		wrap_s_boxes[k].onclick = render
-	}	
-	let wrap_t_boxes = document.getElementsByName("Wrap_T");
-	for(let k = 0; k< wrap_t_boxes.length; k++ )
-	{
-		if (wrap_t_boxes[k].checked)
-		{
-			wrap_t_value = wrap_t_boxes[k].value;
-		}
-		wrap_t_boxes[k].onclick = render
-	}
-	
+	return changed_settings;
 }
 
 //setup_stuff();
 
 function render()
 {
-	decode_radiobutton_selection();
 	sphere1 = sphere(document.getElementById('subdivision_slider').value);
 	time += 1;
-	let eyePos = vec4(2.0, 2.0, 2.0, 1.0); //We put camera in corner in order to make the isometric view
-	eyePos = mult(rotateY(time * 2), eyePos);
+	let eyePos = vec4(1.5, 1.5, 1.5, 1.0); //We put camera in corner in order to make the isometric view
+	eyePos = mult(rotateY(time * .5), eyePos);
 	eyePos = vec3(eyePos[0], eyePos[1], eyePos[2]);
 	
 	let upVec = vec3(0.0, 1.0, 0.0);//we just need the orientation... it will adjust itself
@@ -274,9 +256,7 @@ function render()
 	}
 	let ambientColor = vec4(0.25, 0.25, 0.25, 1.0); //always
 	
-	
-	
-	
+
 	let ambient_coef = document.getElementById("ambientlight_slider").value*.01;
 	let specular_coef = document.getElementById("specularlight_slider").value * .01;
 	let diffuse_coef =document.getElementById("diffuselight_slider").value * .01;
@@ -300,49 +280,51 @@ function render()
 	gl.uniform1f(uniforms.ambient_coef, ambient_coef );
 
 
-	decode_radiobutton_selection();
-	gl.generateMipmap(gl.TEXTURE_2D);
+	const changed_settings = decode_radiobutton_selection();
 
-	switch(min_filter_value)
+	if(changed_settings)
 	{
-		case "Nearest" :
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			break;
-		case "Linear":
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			break;
-		case "NearestMipMap-Nearest" :
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
-			break;
-		case "NearestMipMap-Linear":
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
-			break;
-		case "LinearMipMap-Nearest" :
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-			break;
-		case "LinearMipMap-Linear":
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-			break;
-		default:
-			alert("unrecognized value for minification filter");
-	}
-	switch(max_filter_value)
-	{
-		case "Nearest" :
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			break;
-		case "Linear":
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			break;
-		//Not supported for magnification filter
-		// case "MipMap-Nearest" :
-		// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_NEAREST);
-		// 	break;
-		// case "MipMap-Linear":
-		// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_LINEAR);
-		// 	break;
-		default:
-			alert("unrecognized value for maxification filter");
+		switch(min_filter_value)
+		{
+			case "Nearest" :
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+				break;
+			case "Linear":
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				break;
+			case "NearestMipMap-Nearest" :
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+				break;
+			case "NearestMipMap-Linear":
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+				break;
+			case "LinearMipMap-Nearest" :
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+				break;
+			case "LinearMipMap-Linear":
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+				break;
+			default:
+				alert("unrecognized value for minification filter");
+		}
+		switch(max_filter_value)
+		{
+			case "Nearest" :
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+				break;
+			case "Linear":
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				break;
+			//Not supported for magnification filter
+			// case "MipMap-Nearest" :
+			// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+			// 	break;
+			// case "MipMap-Linear":
+			// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+			// 	break;
+			default:
+				alert("unrecognized value for maxification filter");
+		}
 	}
 	{// draw coordinat system
 		trsMatrix = mat4();
