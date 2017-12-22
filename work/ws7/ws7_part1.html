@@ -45,11 +45,12 @@
     <script id="frag2" type="x-shader/x-fragment" >
 	    precision mediump float;
         varying  vec2 v_texCoordinate;
-        uniform sampler2D tex;
+        uniform sampler2D tex1;
+        //uniform sampler2D tex2;
         
 	    void main()
 	    {
-            gl_FragColor = texture2D(tex,v_texCoordinate);
+            gl_FragColor = texture2D(tex1,v_texCoordinate);
 	    }
     </script>
 <body>
