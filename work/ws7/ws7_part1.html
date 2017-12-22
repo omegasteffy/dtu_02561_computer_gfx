@@ -1,5 +1,7 @@
 ﻿<html>
-	<title>Worksheet 7 - Part 1</title>
+    <title>Worksheet 7 - Part 1</title>
+    
+    <!-- This shader pair is ONLY used to draw a coordinate system and ensuring correct placement of quads-->
     <script id="vert1" type="x-shader/x-vertex" >
         attribute vec4   a_Position;
         attribute vec4   a_Color;
@@ -24,9 +26,10 @@
 	    }
     </script>
 
+    <!-- This shader pair is used to draw a textures and etc.-->
     <script id="vert2" type="x-shader/x-vertex" >
 	    attribute vec4   a_Position;
-        attribute vec2   a_texCoordinate;
+       // attribute vec2   a_texCoordinate;
         uniform mat4 trsMatrix;
         uniform mat4 proj_Matrix;
         uniform mat4 camera_Matrix;
@@ -36,7 +39,7 @@
         {
 
             gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
-            v_texCoordinate = a_texCoordinate;
+            v_texCoordinate = a_Position.xz;
 	    }
     </script>
     <script id="frag2" type="x-shader/x-fragment" >

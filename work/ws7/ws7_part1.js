@@ -85,7 +85,7 @@ function setup_stuff()
 	var canvas = document.getElementById('draw_area');
 	gl = WebGLUtils.setupWebGL(canvas);
 
-	program = initShaders(gl, "vert1", "frag1");
+	program = initShaders(gl, "vert2", "frag2");
 	gl.useProgram(program);
 	uniforms=cacheUniformLocations(gl, program);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
@@ -134,20 +134,18 @@ function setup_stuff()
 	gl.clear(gl.COLOR_BUFFER_BIT);
 
 	
-	// let image_checker = GenerateCheckBoard();
-	// let texture = gl.createTexture();
-	// gl.bindTexture(gl.TEXTURE_2D, texture); // make our new texture the current one
-	// gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 64, 64, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-	// 	image_checker, 0);
+	 let image_checker = GenerateCheckBoard();
+	 let texture = gl.createTexture();
+	 gl.bindTexture(gl.TEXTURE_2D, texture); // make our new texture the current one
+	 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 64, 64, 0, gl.RGBA, gl.UNSIGNED_BYTE,	image_checker, 0);
 
-	// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-	// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 
-	let coorSys = coordinateSystem(gl);
-	send_floats_to_attribute_buffer("a_Position", flatten(coorSys.points), 3, gl, program);
-	send_floats_to_attribute_buffer("a_Color", flatten(coorSys.colors), 4, gl, program);
-	//send_floats_to_attribute_buffer("a_texCoordinate", flatten(texCoords), 2, gl, program);
-	gl.drawArrays(coorSys.drawtype, 0, coorSys.drawCount);
+	// let coorSys = coordinateSystem(gl);
+	// send_floats_to_attribute_buffer("a_Position", flatten(coorSys.points), 3, gl, program);
+	// send_floats_to_attribute_buffer("a_Color", flatten(coorSys.colors), 4, gl, program);
+	// gl.drawArrays(coorSys.drawtype, 0, coorSys.drawCount);
 	
 
 	//quad ground must reach 
