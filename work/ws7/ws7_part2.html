@@ -1,0 +1,67 @@
+﻿<html>
+    <title>Worksheet 7 - Part 2</title>
+    
+    <!-- This shader pair is ONLY used to draw a coordinate system and ensuring correct placement of quads-->
+    <script id="vert1" type="x-shader/x-vertex" >
+        attribute vec4   a_Position;
+        attribute vec4   a_Color;
+        varying vec4   v_Color;
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_Matrix;
+        uniform mat4 camera_Matrix;
+	    void main()
+        {
+ 
+            gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
+            v_Color = a_Color;
+	    }
+    </script>
+    <script id="frag1" type="x-shader/x-fragment" >
+	    precision mediump float;
+        varying vec4 v_Color;
+        
+	    void main()
+	    {
+            gl_FragColor =v_Color;
+	    }
+    </script>
+
+    <!-- This shader pair is used to draw a textures and etc.-->
+    <script id="vert2" type="x-shader/x-vertex" >
+	    attribute vec4   a_Position;
+       // attribute vec2   a_texCoordinate;
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_Matrix;
+        uniform mat4 camera_Matrix;
+        varying vec2 v_texCoordinate;     
+
+	    void main()
+        {
+
+            gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
+            v_texCoordinate = a_Position.xz;
+            gl_PointSize= 20.0;
+	    }
+    </script>
+    <script id="frag2" type="x-shader/x-fragment" >
+	    precision mediump float;
+        varying  vec2 v_texCoordinate;
+        uniform sampler2D tex1;
+        //uniform sampler2D tex2;
+        
+	    void main()
+	    {
+            gl_FragColor = texture2D(tex1,v_texCoordinate);
+            //gl_PointSize= 20.0;
+	    }
+    </script>
+<body>
+	<canvas id='draw_area' height="512" width="512" />
+    <script src="../angel_common/initShaders.js"></script>
+    <script src="../angel_common/webgl-utils.js"></script>
+    <script src="../angel_common/MV.js"></script>
+    <script src="../other_common/helpers.js"></script>
+    <script src="ws7_part2.js"></script>
+</body>
+
+</html>
