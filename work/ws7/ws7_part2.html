@@ -48,10 +48,16 @@
         varying  vec2 v_texCoordinate;
         uniform sampler2D tex1;
         //uniform sampler2D tex2;
+        uniform bool is_a_shadow;
         
 	    void main()
 	    {
+            
             gl_FragColor = texture2D(tex1,v_texCoordinate);
+            if(is_a_shadow)
+            {
+                gl_FragColor = vec4(0,0,0,1.0);
+            }
             //gl_PointSize= 20.0;
 	    }
     </script>
