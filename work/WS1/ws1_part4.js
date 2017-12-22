@@ -17,7 +17,7 @@ function quad(gl, w, h) {
 	x.drawCount = 4;
 	return x;
 }
-var quadSpec;
+var rectSpec;
 var gl;
 var program;
 
@@ -46,11 +46,11 @@ function setup_stuff() {
 			0.4, 0.1, 0.3, 1.0] //Blue
 	);
 
-	quadSpec = quad(gl, 0.5, 0.5);
+	rectSpec = quad(gl, 0.5, 0.5);
 
 	var point_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, point_buffer); // make it the current buffer assigned in WebGL
-	gl.bufferData(gl.ARRAY_BUFFER, quadSpec.vertices, gl.STATIC_DRAW);//link the JS-points and the 
+	gl.bufferData(gl.ARRAY_BUFFER, rectSpec.vertices, gl.STATIC_DRAW);//link the JS-points and the 
 	var vPos = gl.getAttribLocation(program, "vPosition"); // setup a pointer to match the 
 	gl.vertexAttribPointer(vPos, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(vPos);
@@ -73,6 +73,6 @@ function render()
 	gl.uniform1f(thetaLoc, theta);
 	theta += 0.1;
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	gl.drawArrays(quadSpec.drawtype, 0, quadSpec.drawCount);
+	gl.drawArrays(rectSpec.drawtype, 0, rectSpec.drawCount);
 	requestAnimationFrame(render); 
 }
