@@ -60,16 +60,6 @@ const CommonColors = {
 };
 
 function random_color() { return vec4(0.4 + 0.5 * Math.random(), 0.2 + 0.6 * Math.random(), 0.2 + 0.6 * Math.random(), 1.0); }
-var neheTexture;
-function initTexture() {
-neheTexture = gl.createTexture();
-neheTexture.image = new Image();
-neheTexture.image.onload = function() {
-//	handleLoadedTexture(neheTexture)
-}
-
-neheTexture.image.src = '../../code_and_data/earth.jpg';
-}
 
 var image = document.createElement('img');
 image.crossorigin = 'anonymous';
