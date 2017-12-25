@@ -103,7 +103,7 @@ function setup_stuff()
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
-	let eyePos = vec3(0.1, .5, 1.0); // this is apparently what is meant by default
+	let eyePos = vec3(.1, .8, 4); // this is apparently what is meant by default
 	
 	let upVec = vec3(0.0, 10.0, 0.0);//we just need the orientation... it will adjust itself
 	let cameraTarget = vec3(0.0, 0.0, -10.0);// for isometric we should look at origo
@@ -119,7 +119,7 @@ function setup_stuff()
 	let perMatrix = perspective(FieldOfViewY, AspectRatio, near, far);
 
 	gl.enable(gl.DEPTH_TEST);
-	gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
+	//gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
 	trsMatrix = mat4();
 	gl.uniformMatrix4fv(uniforms.proj_Matrix, false, flatten(perMatrix));
@@ -181,7 +181,7 @@ function render()
 	// model-view matrix for shadow then render
 	let m = mat4();
 	m[3][3] = 0;
-	m[3][1] = -1/light_pos[1];
+	m[3][1] = -1 /( light_pos[1] + 1);
 
 	let s_camera_Matrix = mult(g_camera_Matrix, translate(light_pos[0], light_pos[1], light_pos[2]));
 	s_camera_Matrix = mult(s_camera_Matrix, m);
