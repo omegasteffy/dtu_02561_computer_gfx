@@ -119,7 +119,8 @@ function setup_stuff()
 	let perMatrix = perspective(FieldOfViewY, AspectRatio, near, far);
 
 	gl.enable(gl.DEPTH_TEST);
-	//gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
+	//I need to disable curl, otherwise the shadow will be absent when the projection flips it
+	//gl.enable(gl.CULL_FACE); 
 
 	trsMatrix = mat4();
 	gl.uniformMatrix4fv(uniforms.proj_Matrix, false, flatten(perMatrix));
@@ -181,12 +182,11 @@ function render()
 	// model-view matrix for shadow then render
 	let m = mat4();
 	m[3][3] = 0;
-	m[3][1] = -1 /( light_pos[1] + 1);
+	m[3][1] = -1 / (light_pos[1] -  (-0.9999));
 
 	let s_camera_Matrix = mult(g_camera_Matrix, translate(light_pos[0], light_pos[1], light_pos[2]));
 	s_camera_Matrix = mult(s_camera_Matrix, m);
 	s_camera_Matrix = mult(s_camera_Matrix, translate(-light_pos[0], -light_pos[1], -light_pos[2]));
-
 
 	//--quad ground --
 	//must reach 
@@ -194,8 +194,9 @@ function render()
 	// y = -1 fixed i.e. 0 -1
 	// z = -5:-1, i.e (0:1*4) -5
 	gl.bindTexture(gl.TEXTURE_2D, g_texture1); // make our new texture the current one
-	trsMatrix = scalem(4,1,4); 
-	trsMatrix = mult(translate(-2,-1,-5),trsMatrix);
+	gl.uniform1i(uniforms.is_a_shadow, false);
+	trsMatrix = scalem(4, 1, 4);
+	trsMatrix = mult(translate(-2, -1, -5), trsMatrix);
 	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
 	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program);
 	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
@@ -209,11 +210,13 @@ function render()
 	// z = -1.75:-1.25, i.e (0:1*0.5) -1.75
 	gl.bindTexture(gl.TEXTURE_2D, g_texture2); // make our new texture the current one
 	trsMatrix = scalem(.5,1,.5);
-	trsMatrix = mult(translate(.25,-.5,-1.75),trsMatrix);
+	trsMatrix = mult(translate(.25, -.5, -1.75), trsMatrix);
+	//real rectangle
 	gl.uniform1i(uniforms.is_a_shadow, false);
 	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
 	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program);
 	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
+	//shadow
 	gl.uniform1i(uniforms.is_a_shadow, true);
 	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(s_camera_Matrix));
 	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program);
@@ -225,7 +228,8 @@ function render()
 	// y = -.5 fixed i.e. 0 -0.5
 	// z = -1.75:-1.25, i.e (0:1*0.5) -1.75
 	trsMatrix = mult(scalem(1.0,1.0,0.5),rotateZ(90));
-	trsMatrix = mult(translate(-1.0,0.0,-3.0),trsMatrix);
+	trsMatrix = mult(translate(-1.0, 0.0, -3.0), trsMatrix);
+	//real rectangle
 	gl.uniform1i(uniforms.is_a_shadow, false);
 	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(g_camera_Matrix));
 	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
@@ -238,6 +242,7 @@ function render()
 	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
 
 	// indicate the light source shadow
+	// this is not specified in excercise but helps to understand what is going on
 	gl.uniform1i(uniforms.is_a_shadow, true);
 	trsMatrix = mat4()
 	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(g_camera_Matrix));
