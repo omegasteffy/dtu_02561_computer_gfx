@@ -1,0 +1,48 @@
+﻿<html>
+    <title>Worksheet 7 - Part 2</title>
+
+    <!-- This shader pair is used to draw a textures and etc.-->
+    <script id="vert2" type="x-shader/x-vertex" >
+	    attribute vec4   a_Position;
+       // attribute vec2   a_texCoordinate;
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_Matrix;
+        uniform mat4 camera_Matrix;
+        varying vec2 v_texCoordinate;     
+
+	    void main()
+        {
+
+            gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
+            v_texCoordinate = a_Position.xz;
+            gl_PointSize= 20.0;
+	    }
+    </script>
+    <script id="frag2" type="x-shader/x-fragment" >
+	    precision mediump float;
+        varying  vec2 v_texCoordinate;
+        uniform sampler2D tex1;
+        //uniform sampler2D tex2;
+        uniform bool is_a_shadow;
+        
+	    void main()
+	    {
+            
+            gl_FragColor = texture2D(tex1,v_texCoordinate);
+            if(is_a_shadow)
+            {
+                gl_FragColor = vec4(0,0,0,1.0);
+            }
+            //gl_PointSize= 20.0;
+	    }
+    </script>
+<body>
+	<canvas id='draw_area' height="512" width="512" />
+    <script src="../angel_common/initShaders.js"></script>
+    <script src="../angel_common/webgl-utils.js"></script>
+    <script src="../angel_common/MV.js"></script>
+    <script src="../other_common/helpers.js"></script>
+    <script src="ws7_part3.js"></script>
+</body>
+
+</html>
