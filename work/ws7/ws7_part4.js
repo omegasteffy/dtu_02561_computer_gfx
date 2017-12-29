@@ -123,7 +123,10 @@ function render()
 	s_camera_Matrix = mult(s_camera_Matrix, m);
 	s_camera_Matrix = mult(s_camera_Matrix, translate(-light_pos[0], -light_pos[1], -light_pos[2]));
 
+	//info about the constants https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
+	//color(RGBA) = (sourceColor * sfactor) + (destinationColor * dfactor)
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); //https://stackoverflow.com/a/4578208/2986991
+
 	gl.enable(gl.BLEND); // i considered toggling it on/off but there is no need for. The opaque-surfaces will covere anyway
 	gl.enable(gl.DEPTH_TEST); //needed to determine if there is something the shadow can project onto
 	//--quad ground --
