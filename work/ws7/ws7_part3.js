@@ -48,40 +48,6 @@ function coordinateSystem(gl)
 	x.drawCount = x.points.length;
 	return x;
 }
-
-
-function GenerateCheckBoard()
-{
-	let texSize = 64;
-	let numRows = 8;
-	let numCols = 8;
-	let index = 0;
-
-	let image_checker = new Uint8Array(4 /*RGBA*/ * texSize * texSize);
-	for (let i = 0; i < texSize; i++) // why not i++; ???
-	{
-		for (let j = 0; j < texSize; j++) {
-			const patchY = Math.floor(i / (texSize / numRows));
-			const patchX = Math.floor(j / (texSize / numCols));
-			const is_white = (patchX % 2 !== patchY % 2);
-			const color_intensity = is_white ? 255 : 0;
-
-			//Simpler way of indexing
-			image_checker[index++] = color_intensity;
-			image_checker[index++] = color_intensity;
-			image_checker[index++] = color_intensity;
-			image_checker[index++] = 255; //alpha value
-
-			// //book version of indexing the checkerboard
-			//const indexBase =4*i *texSize+4*j;
-			//image_checker[indexBase] = color_intensity;
-			//image_checker[indexBase+1] = color_intensity;
-			//image_checker[indexBase+2] = color_intensity;
-			//image_checker[indexBase+3] = 255; //alpha value
-		}
-	}
-	return image_checker;
-}
 //setup_stuff();
 
 var image = document.createElement('img');
@@ -146,8 +112,6 @@ function setup_stuff()
 
 	gl.clear(gl.COLOR_BUFFER_BIT);
 
-	
-	 let image_checker = GenerateCheckBoard();
 	 g_texture1 = gl.createTexture();
 	 gl.bindTexture(gl.TEXTURE_2D, g_texture1); // make our new texture the current one
 	 //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 64, 64, 0, gl.RGBA, gl.UNSIGNED_BYTE,	image_checker, 0);
