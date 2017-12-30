@@ -111,13 +111,15 @@ function render()
 	let should_teapot_move = document.getElementById("move_teapot").checked;
 	let camera_above = document.getElementById("camera_above").checked;
 	let should_rotate_teapot = document.getElementById("rotate_teapot").checked;
+	let should_rotate_light = document.getElementById("rotate_light").checked;
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.useProgram(program_ground);
+	
 	time++;
 	const initial_light_pos = vec4(-2,2,2,1);
-	const rot = rotateY(time);
-	light_pos = mult(rotateY(time),initial_light_pos);
-	light_pos= mult(translate(0,0,-2),light_pos);
+	const rot = rotateY( should_rotate_light ? time: 0);
+	light_pos = mult( rot , initial_light_pos );
+	light_pos= mult( translate(0,0,-2) , light_pos );
 
 
 	// model-view matrix for projection-shadow... must be updated since the light move around
@@ -158,6 +160,7 @@ function render()
 
 	//start drawing teapot
 	gl.useProgram(program_obj);
+	gl.uniform4fv(uniforms_obj.lightPos, flatten(light_pos));
 	if (should_rotate_teapot)
 	{
 		trsMatrix = mult(rotateY(-time),scalem(0.25,0.25,0.25));
