@@ -79,51 +79,6 @@ function init_stuff() {
 	render();
 }
 
-function sphere(subDivision) {
-	function tetrahedron(a, b, c, d, n, dest) {
-		divideTriangle(a, b, c, n, dest);
-		divideTriangle(d, c, b, n, dest);
-		divideTriangle(a, d, b, n, dest);
-		divideTriangle(a, c, d, n, dest);
-	}
-
-	function divideTriangle(a, b, c, count, dest) {
-		if (count > 0) {
-			let ab = normalize(mix(a, b, 0.5), true);
-			let ac = normalize(mix(a, c, 0.5), true);
-			let bc = normalize(mix(b, c, 0.5), true);
-			divideTriangle(a, ab, ac, count - 1, dest);
-			divideTriangle(ab, b, bc, count - 1, dest);
-			divideTriangle(bc, c, ac, count - 1, dest);
-			divideTriangle(ab, bc, ac, count - 1, dest);
-		} else {
-			//triangle(a, b, c, dest) ... inlined
-			dest.push(a);
-			dest.push(b);
-			dest.push(c);
-		}
-	}
-
-	let x = {};
-	x.Points = [];
-	x.Normals = [];
-	x.Colors = [];
-	let va = vec4(0.0, 0.0, 1.0, 1.0);
-	let vb = vec4(0.0, 0.942809, -0.33, 1.0);
-	let vc = vec4(-0.816497, -0.471405, -0.33, 1.0);
-	let vd = vec4(0.816497, -0.471405, -0.33, 1.0);
-
-	tetrahedron(va, vb, vc, vd, subDivision, x.Points);
-	for (let n = 0; x.Points.length > n; n++) {
-		//color = 0.5*p + 0.3
-		x.Colors[n] = vec4(0.3 + x.Points[n][0], 0.3 + x.Points[n][1], 0.3 + x.Points[n][2], 1.0);
-		x.Normals[n] = x.Points[n];
-	}
-	return x;
-
-}
-
-
 
 function render() {
 
@@ -191,10 +146,6 @@ function render() {
 	send_floats_to_attribute_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program);
 	send_floats_to_attribute_buffer("a_Color", g_drawingInfo.colors, 4, gl, program);
 
-	//send_floats_to_buffer("a_Position", flatten(sphere2Render.Points), 4, gl, program);
-	//send_floats_to_buffer("a_Normal", flatten(sphere2Render.Normals), 4, gl, program);
-	//send_floats_to_buffer("a_Color", flatten(sphere2Render.Colors), 4, gl, program);
-	
 	gl.drawArrays(gl.TRIANGLES, 0, sphere2Render.Points.length);
 	// Create an empty buffer object to store Index buffer
 	let index_buffer = gl.createBuffer();
