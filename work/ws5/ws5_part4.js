@@ -139,14 +139,12 @@ function render() {
 		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
 	}
 	gl.uniform1i(uniforms.use_fixed_color, 0);
-	let sphere2Render = sphere(3);
 	trsMatrix = mult(rotateZ(time),translate(0, -2, 0));
 	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
 	send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program);
 	send_floats_to_attribute_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program);
 	send_floats_to_attribute_buffer("a_Color", g_drawingInfo.colors, 4, gl, program);
 
-	gl.drawArrays(gl.TRIANGLES, 0, sphere2Render.Points.length);
 	// Create an empty buffer object to store Index buffer
 	let index_buffer = gl.createBuffer();
 
