@@ -1,8 +1,7 @@
 console.trace("Started");
 let canvas = document.getElementById('draw_area');
-var obj_stuff;
-var g_objDoc; // The information of OBJ file
-var g_drawingInfo; // The information for drawing 3D model
+var g_objLoader;
+var g_drawingInfo = null; // The information for drawing 3D model
 var uniforms;
 var time;//... well sort of time ... monotonic thing
 init_stuff();
@@ -73,7 +72,8 @@ function init_stuff() {
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
-	obj_stuff = beginReadObj('../models/shark.obj', gl, 1.0, true);
+	g_objLoader = new OBJLoadingHelper();
+	g_objLoader.beginReadingObjFromUrl('../models/shark.obj', 1.0, true);
 	time = 0.0;
 	console.trace("Finished Init");
 	render();
@@ -124,49 +124,12 @@ function sphere(subDivision) {
 }
 
 
-// Read a file, wih async request
-function beginReadObj(fileName, gl, scale, reverse)
-{
-	var request = new XMLHttpRequest();
-	request.onreadystatechange = function ()
-	{
-		if (request.readyState === 4)
-		{
-			if (request.status === 404)
-			{
-				console.log("Unable to download " + request.responseURL)
-			}
-			else {
-				handleFinishedObjFile(request.responseText, fileName, scale, reverse);
-			}
-		}
-	}
-
-	request.open('GET', fileName, true); // Create a request to get file
-	request.send(); // Send the request
-}
-
-
-// OBJ file has been read; now parse it
-function handleFinishedObjFile(fileString, fileName, scale, reverse)
-{
-	var objDoc = new OBJDoc(fileName); // Create a OBJDoc object
-	var result = objDoc.parse(fileString, scale, reverse);
-	if (!result)
-	{
-		g_objDoc = null; g_drawingInfo = null;
-		console.log("OBJ file parsing error.");
-		return;
-	}
-	console.log("Successfully loaded OBJ file.");
-	g_objDoc = objDoc;
-}
 
 function render() {
 
-	if (!g_drawingInfo && g_objDoc && g_objDoc.isMTLComplete()) {
+	if (!g_drawingInfo && g_objLoader.isFinishedLoading() ) {
 		// OBJ and all MTLs are available
-		g_drawingInfo = g_objDoc.getDrawingInfo();
+		g_drawingInfo = g_objLoader.objectDoc.getDrawingInfo();
 	}
 	if (!g_drawingInfo) {
 		//since we have not yet retrieved data we make sure the callback repeat it self
