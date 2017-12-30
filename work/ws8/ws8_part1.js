@@ -1,13 +1,17 @@
 //Globals
 var rectSpec;
 var gl;
-var program;
-var uniforms;
+var program_main;
+let program_obj;
+var uniforms_main;
+var uniforms_obj;
 let g_texture1;
 let g_texture2;
 let light_pos;
 let time;
 let g_camera_Matrix;
+let g_camera_top_Matrix;
+let camera_persMatrix;
 let g_objLoader = null;
 let g_drawingInfo = null;
 
@@ -77,9 +81,11 @@ function setup_stuff()
 	var canvas = document.getElementById('draw_area');
 	gl = WebGLUtils.setupWebGL(canvas);
 
-	program = initShaders(gl, "vert2", "frag2");
-	gl.useProgram(program);
-	uniforms=cacheUniformLocations(gl, program);
+	program_main = initShaders(gl, "vert2", "frag2");
+	program_obj = initShaders(gl, "vert_for_obj", "frag_for_obj");
+	gl.useProgram(program_main);
+	uniforms_main=cacheUniformLocations(gl, program_main);
+	uniforms_obj=cacheUniformLocations(gl, program_obj);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
@@ -89,6 +95,11 @@ function setup_stuff()
 	let cameraTarget = vec3(0.0, 0.0, -10.0);// for isometric we should look at origo
 
 	g_camera_Matrix = lookAt(eyePos, cameraTarget, upVec);
+	
+	let eyePos_top = vec3(0.0, 4.00 ,-3.0); // this is apparently what is meant by default
+	cameraTarget = vec3(0.0001, -1.0, -3.0);
+	upVec = vec3(0.0, 0.0, -1.0);
+	g_camera_top_Matrix = lookAt(eyePos_top, cameraTarget, upVec);
 
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -96,16 +107,16 @@ function setup_stuff()
 	let AspectRatio = (canvas.width / canvas.height); //should be 1.0
 	let near = 1.0;
 	let far = 200.0;
-	let perMatrix = perspective(FieldOfViewY, AspectRatio, near, far);
+	camera_persMatrix = perspective(FieldOfViewY, AspectRatio, near, far);
 
 	gl.enable(gl.DEPTH_TEST);
 	//I need to disable curl, otherwise the shadow will be absent when the projection flips it
 	//gl.enable(gl.CULL_FACE); 
 
 	trsMatrix = mat4();
-	gl.uniformMatrix4fv(uniforms.proj_Matrix, false, flatten(perMatrix));
-	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(g_camera_Matrix));
-	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
+	gl.uniformMatrix4fv(uniforms_main.proj_Matrix, false, flatten(camera_persMatrix));
+	gl.uniformMatrix4fv(uniforms_main.camera_Matrix, false, flatten(g_camera_Matrix));
+	gl.uniformMatrix4fv(uniforms_main.trsMatrix, false, flatten(trsMatrix));
 
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
@@ -147,6 +158,9 @@ function setup_stuff()
 }
 function render()
 {
+	let should_teapot_move = document.getElementById("move_teapot").checked;
+	let camera_above = document.getElementById("camera_above").checked;
+	gl.useProgram(program_main);
 	time++;
 	const initial_light_pos = vec4(-2,2,2,1);
 	const rot = rotateY(time);
@@ -154,15 +168,14 @@ function render()
 	light_pos= mult(translate(0,0,-2),light_pos)
 
 	 gl.clear(gl.COLOR_BUFFER_BIT);
-	 gl.uniform1i(uniforms.is_a_shadow, false);
-	 gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(g_camera_Matrix));
+
 	 
 	// model-view matrix for shadow then render
 	let m = mat4();
 	m[3][3] = 0;
 	m[3][1] = -1 / (light_pos[1] -  (-1.001)); // a small offset from -1.0 to avoid z-fighting... we actually draw it a bit beneath the ground, but have toggled the z-depth test when we draw it
-
-	let s_camera_Matrix = mult(g_camera_Matrix, translate(light_pos[0], light_pos[1], light_pos[2]));
+	let camera_view_matrix = camera_above   ? g_camera_top_Matrix :  g_camera_Matrix;
+	let s_camera_Matrix = mult(camera_view_matrix, translate(light_pos[0], light_pos[1], light_pos[2]));
 	s_camera_Matrix = mult(s_camera_Matrix, m);
 	s_camera_Matrix = mult(s_camera_Matrix, translate(-light_pos[0], -light_pos[1], -light_pos[2]));
 
@@ -172,13 +185,14 @@ function render()
 	// x = -2:2 , i.e. (0:1*4) -2
 	// y = -1 fixed i.e. 0 -1
 	// z = -5:-1, i.e (0:1*4) -5
-	gl.depthFunc(gl.LESS);
-	gl.bindTexture(gl.TEXTURE_2D, g_texture1); // make our new texture the current one
-	gl.uniform1i(uniforms.is_a_shadow, false);
 	trsMatrix = scalem(4, 1, 4);
 	trsMatrix = mult(translate(-2, -1, -5), trsMatrix);
-	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
-	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program);
+	gl.uniformMatrix4fv(uniforms_main.trsMatrix, false, flatten(trsMatrix));
+	gl.depthFunc(gl.LESS);
+	gl.bindTexture(gl.TEXTURE_2D, g_texture1); // make our new texture the current one
+	gl.uniform1i(uniforms_main.is_a_shadow, false);
+	gl.uniformMatrix4fv(uniforms_main.camera_Matrix, false, flatten(camera_view_matrix));
+	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_main);
 	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
 
 
@@ -191,18 +205,20 @@ function render()
 	gl.bindTexture(gl.TEXTURE_2D, g_texture2); // make our new texture the current one
 	trsMatrix = scalem(.5,1,.5);
 	trsMatrix = mult(translate(.25, -.5, -1.75), trsMatrix);
-	//real rectangle
-	gl.depthFunc(gl.LESS);
-	gl.uniform1i(uniforms.is_a_shadow, false);
-	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
-	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program);
-	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
+	gl.uniformMatrix4fv(uniforms_main.trsMatrix, false, flatten(trsMatrix));
 	//shadow
 	gl.depthFunc(gl.GREATER); //only draw shadows if there already is something beneath
-	gl.uniform1i(uniforms.is_a_shadow, true);
-	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(s_camera_Matrix));
-	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program);
+	gl.uniform1i(uniforms_main.is_a_shadow, true);
+	gl.uniformMatrix4fv(uniforms_main.camera_Matrix, false, flatten(s_camera_Matrix));
+	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_main);
 	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
+	//real rectangle
+	gl.depthFunc(gl.LESS);
+	gl.uniform1i(uniforms_main.is_a_shadow, false);
+	gl.uniformMatrix4fv(uniforms_main.camera_Matrix, false, flatten(camera_view_matrix));
+	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_main);
+	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
+
 
 
 
@@ -213,31 +229,69 @@ function render()
 	// z = -1.75:-1.25, i.e (0:1*0.5) -1.75
 	trsMatrix = mult(scalem(1.0,1.0,0.5),rotateZ(90));
 	trsMatrix = mult(translate(-1.0, 0.0, -3.0), trsMatrix);
-
-	//real rectangle	
-	gl.depthFunc(gl.LESS);
-	gl.uniform1i(uniforms.is_a_shadow, false);
-	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(g_camera_Matrix));
-	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
-	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program);
-	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
+	gl.uniformMatrix4fv(uniforms_main.trsMatrix, false, flatten(trsMatrix));
 	//shadow
 	gl.depthFunc(gl.GREATER);
-	gl.uniform1i(uniforms.is_a_shadow, true);
-	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(s_camera_Matrix));
-	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program);
+	gl.uniform1i(uniforms_main.is_a_shadow, true);
+	gl.uniformMatrix4fv(uniforms_main.camera_Matrix, false, flatten(s_camera_Matrix));
+	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_main);
 	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
-
-
+	//real rectangle	
 	gl.depthFunc(gl.LESS);
+	gl.uniform1i(uniforms_main.is_a_shadow, false);
+	gl.uniformMatrix4fv(uniforms_main.camera_Matrix, false, flatten(camera_view_matrix));
+	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_main);
+	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
+	
+
+
 	// indicate the light source shadow
 	// this is not specified in excercise but helps to understand what is going on
-	gl.uniform1i(uniforms.is_a_shadow, false);
+	gl.depthFunc(gl.LESS);
+	gl.uniform1i(uniforms_main.is_a_shadow, false);
 	trsMatrix = mat4()
-	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(g_camera_Matrix));
-	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
-	send_floats_to_attribute_buffer("a_Position", flatten(light_pos), 3, gl, program);
+	gl.uniformMatrix4fv(uniforms_main.camera_Matrix, false, flatten(camera_view_matrix));
+	gl.uniformMatrix4fv(uniforms_main.trsMatrix, false, flatten(trsMatrix));
+	send_floats_to_attribute_buffer("a_Position", flatten(light_pos), 3, gl, program_main);
 	gl.drawArrays(gl.POINTS, 0, 1);
+
+	gl.useProgram(program_obj);
+	trsMatrix = mult(rotateY(-time),scalem(0.25,0.25,0.25));
+	if(should_teapot_move)
+	{
+		trsMatrix = mult(translate(0.0,-0.75 + 0.25*Math.sin(.2*time),-3.0),trsMatrix);
+	}else
+	{
+		trsMatrix = mult(translate(0.0,-1.00 ,-3.0),trsMatrix);
+	}
+
+	gl.uniformMatrix4fv(uniforms_obj.trsMatrix, false, flatten(trsMatrix));
+	
+	//shadow
+	gl.depthFunc(gl.GREATER);
+	gl.uniform1i(uniforms_obj.is_a_shadow, true);
+	gl.uniformMatrix4fv(uniforms_obj.proj_Matrix, false, flatten(camera_persMatrix));
+	gl.uniformMatrix4fv(uniforms_obj.camera_Matrix, false, flatten(s_camera_Matrix));
+	send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program_obj);
+	send_floats_to_attribute_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program_obj);
+	send_floats_to_attribute_buffer("a_Color", g_drawingInfo.colors, 4, gl, program_obj);
+	let index_buffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
+	gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
+
+	//real object
+	gl.depthFunc(gl.LESS);
+	gl.uniform1i(uniforms_obj.is_a_shadow, false);
+	gl.uniformMatrix4fv(uniforms_obj.camera_Matrix, false, flatten(camera_view_matrix));
+	send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program_obj);
+	send_floats_to_attribute_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program_obj);
+	send_floats_to_attribute_buffer("a_Color", g_drawingInfo.colors, 4, gl, program_obj);
+	index_buffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
+	gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
+
 
 	requestAnimationFrame(render);
 
