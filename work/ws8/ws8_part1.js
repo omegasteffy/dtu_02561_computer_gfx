@@ -1,9 +1,9 @@
 //Globals
 var rectSpec;
 var gl;
-var program_floor;
+var program_ground;
 let program_obj;
-var uniforms_floor;
+var uniforms_ground;
 var uniforms_obj;
 let g_texture1;
 let g_texture2;
@@ -57,10 +57,10 @@ function setup_stuff()
 	var canvas = document.getElementById('draw_area');
 	gl = WebGLUtils.setupWebGL(canvas);
 
-	program_floor = initShaders(gl, "vert2", "frag2");
+	program_ground = initShaders(gl, "vert_for_ground", "frag_for_ground");
 	program_obj = initShaders(gl, "vert_for_obj", "frag_for_obj");
-	gl.useProgram(program_floor);
-	uniforms_floor=cacheUniformLocations(gl, program_floor);
+	gl.useProgram(program_ground);
+	uniforms_ground=cacheUniformLocations(gl, program_ground);
 	uniforms_obj=cacheUniformLocations(gl, program_obj);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
@@ -90,7 +90,7 @@ function setup_stuff()
 	// and for the tea-pot the wierd hole at the cover will appear
 	//gl.enable(gl.CULL_FACE); 
 
-	gl.uniformMatrix4fv(uniforms_floor.proj_Matrix, false, flatten(camera_persMatrix));
+	gl.uniformMatrix4fv(uniforms_ground.proj_Matrix, false, flatten(camera_persMatrix));
 
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
@@ -120,7 +120,7 @@ function render()
 	let should_teapot_move = document.getElementById("move_teapot").checked;
 	let camera_above = document.getElementById("camera_above").checked;
 
-	gl.useProgram(program_floor);
+	gl.useProgram(program_ground);
 	time++;
 	const initial_light_pos = vec4(-2,2,2,1);
 	const rot = rotateY(time);
@@ -147,23 +147,23 @@ function render()
 	// z = -5:-1, i.e (0:1*4) -5
 	trsMatrix = scalem(4, 1, 4);
 	trsMatrix = mult(translate(-2, -1, -5), trsMatrix);
-	gl.uniformMatrix4fv(uniforms_floor.trsMatrix, false, flatten(trsMatrix));
+	gl.uniformMatrix4fv(uniforms_ground.trsMatrix, false, flatten(trsMatrix));
 	gl.depthFunc(gl.LESS);
 	gl.bindTexture(gl.TEXTURE_2D, g_texture1); // make our new texture the current one
-	gl.uniform1i(uniforms_floor.is_a_shadow, false);
-	gl.uniformMatrix4fv(uniforms_floor.camera_Matrix, false, flatten(camera_view_matrix));
-	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_floor);
+	gl.uniform1i(uniforms_ground.is_a_shadow, false);
+	gl.uniformMatrix4fv(uniforms_ground.camera_Matrix, false, flatten(camera_view_matrix));
+	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_ground);
 	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
 
 
 	// indicate the light source shadow
 	// this is not specified in excercise but helps to understand what is going on
 	gl.depthFunc(gl.LESS);
-	gl.uniform1i(uniforms_floor.is_a_shadow, false);
+	gl.uniform1i(uniforms_ground.is_a_shadow, false);
 	trsMatrix = mat4()
-	gl.uniformMatrix4fv(uniforms_floor.camera_Matrix, false, flatten(camera_view_matrix));
-	gl.uniformMatrix4fv(uniforms_floor.trsMatrix, false, flatten(trsMatrix));
-	send_floats_to_attribute_buffer("a_Position", flatten(light_pos), 3, gl, program_floor);
+	gl.uniformMatrix4fv(uniforms_ground.camera_Matrix, false, flatten(camera_view_matrix));
+	gl.uniformMatrix4fv(uniforms_ground.trsMatrix, false, flatten(trsMatrix));
+	send_floats_to_attribute_buffer("a_Position", flatten(light_pos), 3, gl, program_ground);
 	gl.drawArrays(gl.POINTS, 0, 1);
 
 	//start drawing teapot

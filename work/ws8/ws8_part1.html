@@ -2,7 +2,7 @@
     <title>Worksheet 8 - Part 1</title>
 
     <!-- This shader pair is used to draw a textures and etc.-->
-    <script id="vert2" type="x-shader/x-vertex" >
+    <script id="vert_for_ground" type="x-shader/x-vertex" >
 	    attribute vec4   a_Position;
        // attribute vec2   a_texCoordinate;
         uniform mat4 trsMatrix;
@@ -18,7 +18,7 @@
             gl_PointSize= 20.0;
 	    }
     </script>
-    <script id="frag2" type="x-shader/x-fragment" >
+    <script id="frag_for_ground" type="x-shader/x-fragment" >
 	    precision mediump float;
         varying  vec2 v_texCoordinate;
         uniform sampler2D tex1;
