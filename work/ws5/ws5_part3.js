@@ -1,10 +1,70 @@
 console.trace("Started");
 let canvas = document.getElementById('draw_area');
-var obj_stuff;
-var g_objDoc; // The information of OBJ file
-var g_drawingInfo; // The information for drawing 3D model
+var g_objLoader = null;
+var g_drawingInfo = null;
 var uniforms;
-init_stuff();
+
+let OBJLoadingHelper = function () {
+	this.url = null;
+	this.request = null;
+	this.objectDoc = null;
+ }
+  
+ OBJLoadingHelper.prototype.isFinishedLoading = function ()
+ {
+	if( this.objectDoc && this.objectDoc.isMTLComplete() ) //ensure both the basic object as well as the material loading request have finished
+	{
+		return true;
+	}
+	return false;
+ }
+
+  // Parsing the OBJ file
+OBJLoadingHelper.prototype.beginReadingObjFromUrl = function (url, scale, reverse)
+{
+	if(this.request)
+	{
+		console.log("Already started to download " + url)
+	}
+	var request = new XMLHttpRequest();
+	this.request = request;//assign immidiately to avoid subsequent requests
+	request.callbackTarget = this;
+	this.url = url;
+	request.onreadystatechange = function ()
+	{
+		if (request.readyState === 4)
+		{
+			if (request.status === 404)
+			{
+				console.log("Unable to download " + request.responseURL)
+			}
+			else {
+				request.callbackTarget.handleFinishedObjFile(request.responseText, url, scale, reverse);
+			}
+		}
+	}
+
+	request.open('GET', url, true); // Create a request to get file
+	request.send(); // Send the request
+}
+
+// OBJ file has been read; now parse it
+OBJLoadingHelper.prototype.handleFinishedObjFile = function (fileString, url, scale, reverse)
+{
+	let objectDoc = new OBJDoc(url); // Create a OBJDoc object
+	var result = objectDoc.parse(fileString, scale, reverse);
+	if (!result)
+	{
+		objectDoc = null;
+		this.drawingInfo = null;
+		console.log("OBJ file parsing error.");
+		return;
+	}
+	this.objectDoc = objectDoc; // do not assign it a member variable before... the isFinishedLoading-function check it
+	
+	console.log("Successfully loaded OBJ file.");
+}
+
 
 const CommonColors = {
 	"black": vec4(0.0, 0.0, 0.0, 1.0),
@@ -19,6 +79,7 @@ const CommonColors = {
 	"brown": vec4(0.7, 0.25, .06, 1.0),
 	"light_blue_clearing_color": vec4(0.3921, 0.5843, 0.9294, .10)
 };
+init_stuff();
 
 function send_floats_to_attribute_buffer(buffername, input_data, data_dimension, gl, program) {
 	let buffer = gl.createBuffer();
@@ -72,55 +133,19 @@ function init_stuff() {
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
-	obj_stuff = beginReadObj('../models/shark.obj', gl, 1.0, true);
+	g_objLoader = new OBJLoadingHelper();
+	g_objLoader.beginReadingObjFromUrl('../models/shark.obj',1.0, true);
 
 	console.trace("Finished Init");
 	render();
 }
 
-// Read a file, wih async request
-function beginReadObj(fileName, gl, scale, reverse)
-{
-	var request = new XMLHttpRequest();
-	request.onreadystatechange = function ()
-	{
-		if (request.readyState === 4)
-		{
-			if (request.status === 404)
-			{
-				console.log("Unable to download " + request.responseURL)
-			}
-			else {
-				handleFinishedObjFile(request.responseText, fileName, scale, reverse);
-			}
-		}
-	}
-
-	request.open('GET', fileName, true); // Create a request to get file
-	request.send(); // Send the request
-}
-
-
-// OBJ file has been read; now parse it
-function handleFinishedObjFile(fileString, fileName, scale, reverse)
-{
-	var objDoc = new OBJDoc(fileName); // Create a OBJDoc object
-	var result = objDoc.parse(fileString, scale, reverse);
-	if (!result)
-	{
-		g_objDoc = null; g_drawingInfo = null;
-		console.log("OBJ file parsing error.");
-		return;
-	}
-	console.log("Successfully loaded OBJ file.");
-	g_objDoc = objDoc;
-}
 
 function render() {
 
-	if (!g_drawingInfo && g_objDoc && g_objDoc.isMTLComplete()) {
+	if (!g_drawingInfo && g_objLoader.isFinishedLoading()) {
 		// OBJ and all MTLs are available
-		g_drawingInfo = g_objDoc.getDrawingInfo();
+		g_drawingInfo = g_objLoader.objectDoc.getDrawingInfo();
 	}
 	if (!g_drawingInfo) {
 		//since we have not yet retrieved data we make sure the callback repeat it self
