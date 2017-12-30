@@ -72,7 +72,7 @@ function setup_stuff()
 	g_camera_Matrix = lookAt(eyePos, cameraTarget, upVec);
 
 	//Setup a from above camera view
-	let eyePos_top = vec3(0.0, 4.00 ,-3.0); // this is apparently what is meant by default
+	let eyePos_top = vec3(0.0, 7.50 ,-3.0); // this is apparently what is meant by default
 	cameraTarget = vec3(0.0001, -1.0, -3.0);
 	upVec = vec3(0.0, 0.0, -1.0);
 	g_camera_top_Matrix = lookAt(eyePos_top, cameraTarget, upVec);
@@ -110,6 +110,7 @@ function render()
 {
 	let should_teapot_move = document.getElementById("move_teapot").checked;
 	let camera_above = document.getElementById("camera_above").checked;
+	let should_rotate_teapot = document.getElementById("rotate_teapot").checked;
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.useProgram(program_ground);
 	time++;
@@ -157,7 +158,13 @@ function render()
 
 	//start drawing teapot
 	gl.useProgram(program_obj);
-	trsMatrix = mult(rotateY(-time),scalem(0.25,0.25,0.25));
+	if (should_rotate_teapot)
+	{
+		trsMatrix = mult(rotateY(-time),scalem(0.25,0.25,0.25));
+	}else
+	{
+		trsMatrix = scalem(0.25,0.25,0.25);
+	}
 	if(should_teapot_move)
 	{
 		trsMatrix = mult(translate(0.0,-0.75 + 0.25*Math.sin(.2*time),-3.0),trsMatrix);
