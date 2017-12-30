@@ -59,26 +59,26 @@ function setup_stuff()
 
 	program_ground = initShaders(gl, "vert_for_ground", "frag_for_ground");
 	program_obj = initShaders(gl, "vert_for_obj", "frag_for_obj");
-	gl.useProgram(program_ground);
+
 	uniforms_ground=cacheUniformLocations(gl, program_ground);
 	uniforms_obj=cacheUniformLocations(gl, program_obj);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
+	//setup the default camera view
 	let eyePos = vec3(.1, .8, 4); // this is apparently what is meant by default
-	
 	let upVec = vec3(0.0, 10.0, 0.0);//we just need the orientation... it will adjust itself
 	let cameraTarget = vec3(0.0, 0.0, -10.0);// for isometric we should look at origo
-
 	g_camera_Matrix = lookAt(eyePos, cameraTarget, upVec);
-	
+
+	//Setup a from above camera view
 	let eyePos_top = vec3(0.0, 4.00 ,-3.0); // this is apparently what is meant by default
 	cameraTarget = vec3(0.0001, -1.0, -3.0);
 	upVec = vec3(0.0, 0.0, -1.0);
 	g_camera_top_Matrix = lookAt(eyePos_top, cameraTarget, upVec);
 
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+	//setup perspetive
 	let FieldOfViewY = 45; //deg
 	let AspectRatio = (canvas.width / canvas.height); //should be 1.0
 	let near = 1.0;
@@ -90,24 +90,15 @@ function setup_stuff()
 	// and for the tea-pot the wierd hole at the cover will appear
 	//gl.enable(gl.CULL_FACE); 
 
-	gl.uniformMatrix4fv(uniforms_ground.proj_Matrix, false, flatten(camera_persMatrix));
-
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-	
 	rect = rectangle(gl);
-	rect.colors=[]
-	for( let k=0; k< rect.vertices.length/3; k++ )
-	{
-		rect.colors[k] = CommonColors.orange;
-	}	
 
-	gl.clear(gl.COLOR_BUFFER_BIT);
 
-	 g_texture1 = gl.createTexture();
-	 gl.bindTexture(gl.TEXTURE_2D, g_texture1); // make our new texture the current one
-	 //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 64, 64, 0, gl.RGBA, gl.UNSIGNED_BYTE,	image_checker, 0);
-	 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image);
-	 gl.generateMipmap(gl.TEXTURE_2D);
+	gl.useProgram(program_ground);
+	gl.uniformMatrix4fv(uniforms_ground.proj_Matrix, false, flatten(camera_persMatrix));
+	g_texture1 = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, g_texture1); // make our new texture the current one
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image);
+	gl.generateMipmap(gl.TEXTURE_2D);
 
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -119,18 +110,16 @@ function render()
 {
 	let should_teapot_move = document.getElementById("move_teapot").checked;
 	let camera_above = document.getElementById("camera_above").checked;
-
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.useProgram(program_ground);
 	time++;
 	const initial_light_pos = vec4(-2,2,2,1);
 	const rot = rotateY(time);
 	light_pos = mult(rotateY(time),initial_light_pos);
-	light_pos= mult(translate(0,0,-2),light_pos)
-
-	 gl.clear(gl.COLOR_BUFFER_BIT);
+	light_pos= mult(translate(0,0,-2),light_pos);
 
 
-	// model-view matrix for projection-shadow
+	// model-view matrix for projection-shadow... must be updated since the light move around
 	let m = mat4();
 	m[3][3] = 0;
 	m[3][1] = -1 / (light_pos[1] -  (-1.001)); // a small offset from -1.0 to avoid z-fighting... we actually draw it a bit beneath the ground, but have toggled the z-depth test when we draw it
@@ -203,7 +192,6 @@ function render()
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
 	gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
-
 
 	requestAnimationFrame(render);
 
