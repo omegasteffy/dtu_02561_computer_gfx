@@ -1,7 +1,6 @@
 /**
-*
-*
-*
+* a colloection of helper developed during the course
+*  /Steffen Villadsen
 **/
 
 /**
