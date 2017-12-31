@@ -188,7 +188,8 @@ function render()
 	const initial_light_pos = vec4(-2,2,2,1);
 	const rot = rotateY( should_rotate_light ? time: 0);
 	light_pos = mult( rot , initial_light_pos );
-	light_pos= mult( translate(0,0,-2) , light_pos );
+	light_pos= mult( translate(0,0,-2.00001) , light_pos ); //i have experienced some exceptions/crashes in MV, when calculating dot-product and length if i use -2.0
+	//Uncaught normalize: vector -0.9688915258909286,2.956082375889767,2.9819414985431227 has zero length
 
 
 	// model-view matrix for projection-shadow... must be updated since the light move around
@@ -273,7 +274,8 @@ function render()
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
 	gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
-
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	gl.deleteBuffer(index_buffer);
 	gl.useProgram(program_lightdepth);
 	
 	//calculate depthmap... must be updated for each frame to compensate for changed direction of light
@@ -295,13 +297,13 @@ function render()
 	gl.uniformMatrix4fv(uniforms_ligthdepth.camera_Matrix, false, flatten(light_camera_matrix));
 	gl.uniformMatrix4fv(uniforms_ligthdepth.proj_Matrix, false, flatten(light_perMatrix));
 	gl.uniformMatrix4fv(uniforms_ligthdepth.trsMatrix, false, flatten(trsMatrix_teapot));
-	send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program_lightdepth);
-	//send_floats_to_attribute_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program_obj);
-	//send_floats_to_attribute_buffer("a_Color", g_drawingInfo.colors, 4, gl, program_obj);
+	send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program_lightdepth);	
 	index_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
 	gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	gl.deleteBuffer(index_buffer);
 
 	gl.uniformMatrix4fv(uniforms_ligthdepth.trsMatrix, false, flatten(trsMatrix_ground));
 	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_lightdepth);
