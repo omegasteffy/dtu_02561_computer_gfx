@@ -183,6 +183,7 @@ function render()
 	let should_rotate_light = document.getElementById("rotate_light").checked;
 	let view_light_depth = document.getElementById("view_light_depth").checked;
 	let disable_teapot_shadowmapping = document.getElementById("disable_teapot_shadowmapping").checked;
+	let draw_shadow_projection_ground = document.getElementById("draw_shadow_projection_ground").checked;
 
 	
 	time++;
@@ -308,20 +309,21 @@ function render()
 	gl.bindTexture(gl.TEXTURE_2D, fbo.texture);
 	//shadow
 
-	// gl.depthFunc(gl.GREATER);
-	// gl.uniform1i(uniforms_obj.is_a_shadow, true);
+	if(draw_shadow_projection_ground){
+	gl.depthFunc(gl.GREATER);
+	gl.uniform1i(uniforms_obj.is_a_shadow, true);
 	
-	// gl.uniformMatrix4fv(uniforms_obj.camera_Matrix, false, flatten(s_camera_Matrix));
-	// send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program_obj);
-	// send_floats_to_attribute_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program_obj);
-	// send_floats_to_attribute_buffer("a_Color", g_drawingInfo.colors, 4, gl, program_obj);
-	// index_buffer = gl.createBuffer();
-	// gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
-	// gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
-	// gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
-	// gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	// gl.deleteBuffer(index_buffer);	
-
+	gl.uniformMatrix4fv(uniforms_obj.camera_Matrix, false, flatten(s_camera_Matrix));
+	send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program_obj);
+	send_floats_to_attribute_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program_obj);
+	send_floats_to_attribute_buffer("a_Color", g_drawingInfo.colors, 4, gl, program_obj);
+	index_buffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
+	gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	gl.deleteBuffer(index_buffer);	
+	}
 	//real object
 	gl.depthFunc(gl.LESS);
 	gl.uniform1i(uniforms_obj.is_a_shadow, false);
@@ -343,7 +345,7 @@ function render()
 function use_depthbuffer()
 { 	
 	gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);               // Change the drawing destination to FBO
-	//gl.clearColor(1.0, 1.0, 1.0, 1.0); //It looks better when starting from a close distance
+	gl.clearColor(1.0, 1.0, 1.0, 1.0); //It looks better when starting from a close distance
 	gl.viewport(0, 0, OFFSCREEN_HEIGHT, OFFSCREEN_HEIGHT); // Set view port for FBO
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);   // Clear FBO    
 }
