@@ -17,6 +17,7 @@ let camera_persMatrix;
 let g_objLoader = null;
 let g_drawingInfo = null;
 let fbo;
+let canvas;
 
 
 
@@ -119,7 +120,7 @@ function setup_stuff()
 		return;
 	}
 	console.trace("Setup started");	
-	var canvas = document.getElementById('draw_area');
+	canvas = document.getElementById('draw_area');
 	gl = WebGLUtils.setupWebGL(canvas);
 
 	program_ground = initShaders(gl, "vert_for_ground", "frag_for_ground");
@@ -180,7 +181,7 @@ function render()
 	let camera_above = document.getElementById("camera_above").checked;
 	let should_rotate_teapot = document.getElementById("rotate_teapot").checked;
 	let should_rotate_light = document.getElementById("rotate_light").checked;
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	use_framebuffer();
 	gl.useProgram(program_ground);
 	
 	time++;
@@ -276,6 +277,9 @@ function render()
 	gl.useProgram(program_lightdepth);
 	
 	//calculate depthmap... must be updated for each frame to compensate for changed direction of light
+	use_depthbuffer();
+
+	
 	let FieldOfViewY = 70; //deg
 	let lightProjRatio = OFFSCREEN_WIDTH / OFFSCREEN_HEIGHT; // should be 1:1
 	let near = 1.0;
@@ -306,4 +310,17 @@ function render()
 
 	requestAnimationFrame(render);
 
+}
+function use_depthbuffer()
+{ 	
+	gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);               // Change the drawing destination to FBO
+	gl.viewport(0, 0, OFFSCREEN_HEIGHT, OFFSCREEN_HEIGHT); // Set view port for FBO
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);   // Clear FBO    
+}
+
+function use_framebuffer()
+{
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);               // Change the drawing destination to color buffer
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);    // Clear color and depth buffer
 }
