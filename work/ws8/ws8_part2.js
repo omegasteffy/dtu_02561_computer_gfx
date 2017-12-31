@@ -181,6 +181,8 @@ function render()
 	let camera_above = document.getElementById("camera_above").checked;
 	let should_rotate_teapot = document.getElementById("rotate_teapot").checked;
 	let should_rotate_light = document.getElementById("rotate_light").checked;
+	let view_light_depth = document.getElementById("view_light_depth").checked;
+	let disable_teapot_shadowmapping = document.getElementById("disable_teapot_shadowmapping").checked;
 
 	
 	time++;
@@ -228,7 +230,7 @@ function render()
 
 	
 	//camera matrix
-	let FieldOfViewY = 120; //deg ... width off how the lightsource view the scene, to narrow cause wierd edge effects
+	let FieldOfViewY = 100; //deg ... width off how the lightsource view the scene, to narrow cause wierd edge effects
 	let lightProjRatio = OFFSCREEN_WIDTH / OFFSCREEN_HEIGHT; // should be 1:1
 	let near = 1.0;
 	let far = 100.0;
@@ -239,7 +241,10 @@ function render()
 	let light_camera_matrix = lookAt(light_pos3dim, lightTarget, upVec);
 
 	//calculate depthmap... must be updated for each frame to compensate for changed direction of light
-	use_depthbuffer();
+	if (! view_light_depth)
+	{
+		 use_depthbuffer(); //in case we are viewing the depth map we should stick to the normal framebuffer and not switch to depthbuffer
+	}
 	//real object
 	gl.useProgram(program_lightdepth);
 	gl.depthFunc(gl.LESS);
@@ -257,7 +262,12 @@ function render()
 	gl.uniformMatrix4fv(uniforms_ligthdepth.trsMatrix, false, flatten(trsMatrix_ground));
 	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_lightdepth);
 	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
-	
+	if( view_light_depth)
+	{
+		requestAnimationFrame(render);
+		return; // do not perform the remaining rendering in case we are inspecting the light distance map
+	}
+
 	use_framebuffer();
 	gl.useProgram(program_ground);
 	gl.enable(gl.DEPTH_TEST);
@@ -291,6 +301,11 @@ function render()
 	gl.uniform4fv(uniforms_obj.lightPos, flatten(light_pos));
 	gl.uniformMatrix4fv(uniforms_obj.trsMatrix, false, flatten(trsMatrix_teapot));
 	gl.uniformMatrix4fv(uniforms_obj.proj_Matrix, false, flatten(camera_persMatrix));
+	gl.uniformMatrix4fv(uniforms_obj.lightProjMatrix, false, flatten(light_perMatrix));
+	gl.uniformMatrix4fv(uniforms_obj.lightCamMatrix, false, flatten(light_camera_matrix));
+	gl.uniform1i(uniforms_obj.shadow_map, 1);  // assign the shadow to TEXTURE1
+	gl.activeTexture(gl.TEXTURE1); // Set a texture object to the texture unit
+	gl.bindTexture(gl.TEXTURE_2D, fbo.texture);
 	//shadow
 
 	// gl.depthFunc(gl.GREATER);
@@ -310,6 +325,7 @@ function render()
 	//real object
 	gl.depthFunc(gl.LESS);
 	gl.uniform1i(uniforms_obj.is_a_shadow, false);
+	gl.uniform1i(uniforms_obj.disable_shadow_map, disable_teapot_shadowmapping);
 	gl.uniformMatrix4fv(uniforms_obj.camera_Matrix, false, flatten(camera_view_matrix));
 	send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program_obj);
 	send_floats_to_attribute_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program_obj);
@@ -327,7 +343,7 @@ function render()
 function use_depthbuffer()
 { 	
 	gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);               // Change the drawing destination to FBO
-	gl.clearColor(1.0, 1.0, 1.0, 1.0); //It looks better when starting from a close distance
+	//gl.clearColor(1.0, 1.0, 1.0, 1.0); //It looks better when starting from a close distance
 	gl.viewport(0, 0, OFFSCREEN_HEIGHT, OFFSCREEN_HEIGHT); // Set view port for FBO
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);   // Clear FBO    
 }
