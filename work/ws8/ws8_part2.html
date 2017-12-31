@@ -8,12 +8,16 @@
         uniform mat4 trsMatrix;
         uniform mat4 proj_Matrix;
         uniform mat4 camera_Matrix;
-        varying vec2 v_texCoordinate;     
+        uniform mat4 lightProjMatrix;
+        uniform mat4 lightCamMatrix;
+        varying vec2 v_texCoordinate;  
+        varying vec4 v_PositionFromLight;   
 
 	    void main()
         {
 
             gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
+            v_PositionFromLight = lightProjMatrix * lightCamMatrix * trsMatrix * a_Position;
             v_texCoordinate = a_Position.xz;
             gl_PointSize= 20.0;
 	    }
@@ -21,14 +25,19 @@
     <script id="frag_for_ground" type="x-shader/x-fragment" >
 	    precision mediump float;
         varying  vec2 v_texCoordinate;
+        varying vec4 v_PositionFromLight;  
         uniform sampler2D tex1;
-        //uniform sampler2D tex2;
+        uniform sampler2D shadow_map;
         uniform bool is_a_shadow;
         
 	    void main()
 	    {
-            
+            vec3 shadowCoord = (v_PositionFromLight.xyz/v_PositionFromLight.w)/2.0 + 0.5;
+            vec4 rgbaDepth = texture2D(shadow_map, shadowCoord.xy);
+            float depth = rgbaDepth.r; // Retrieve the z-value from R
+            float visibility = (shadowCoord.z > depth + 0.005) ? 0.4 : 1.0;
             gl_FragColor = texture2D(tex1,v_texCoordinate);
+            gl_FragColor.rgb = visibility *gl_FragColor.rgb;
             if(is_a_shadow)
             {
                 gl_FragColor = vec4(0,0,0,1.0);

@@ -181,8 +181,7 @@ function render()
 	let camera_above = document.getElementById("camera_above").checked;
 	let should_rotate_teapot = document.getElementById("rotate_teapot").checked;
 	let should_rotate_light = document.getElementById("rotate_light").checked;
-	use_framebuffer();
-	gl.useProgram(program_ground);
+
 	
 	time++;
 	const initial_light_pos = vec4(-2,2,2,1);
@@ -190,6 +189,32 @@ function render()
 	light_pos = mult( rot , initial_light_pos );
 	light_pos= mult( translate(0,0,-2.00001) , light_pos ); //i have experienced some exceptions/crashes in MV, when calculating dot-product and length if i use -2.0
 	//Uncaught normalize: vector -0.9688915258909286,2.956082375889767,2.9819414985431227 has zero length
+
+
+	let trsMatrix_teapot = mat4();
+	if (should_rotate_teapot)
+	{
+		trsMatrix_teapot = mult(rotateY(-time),scalem(0.25,0.25,0.25));
+	}else
+	{
+		trsMatrix_teapot = scalem(0.25,0.25,0.25);
+	}
+
+	if(should_teapot_move)
+	{
+		trsMatrix_teapot = mult(translate(0.0,-0.75 + 0.25*Math.sin(.2*time),-3.0),trsMatrix_teapot);
+	}else
+	{
+		trsMatrix_teapot = mult(translate(0.0,-1.00 ,-3.0),trsMatrix_teapot);
+	}
+
+		//--quad ground --
+	//must reach 
+	// x = -2:2 , i.e. (0:1*4) -2
+	// y = -1 fixed i.e. 0 -1
+	// z = -5:-1, i.e (0:1*4) -5
+	let trsMatrix_ground = scalem(4, 1, 4);
+	trsMatrix_ground = mult(translate(-2, -1, -5), trsMatrix_ground);
 
 
 	// model-view matrix for projection-shadow... must be updated since the light move around
@@ -201,17 +226,49 @@ function render()
 	s_camera_Matrix = mult(s_camera_Matrix, m);
 	s_camera_Matrix = mult(s_camera_Matrix, translate(-light_pos[0], -light_pos[1], -light_pos[2]));
 
-	gl.enable(gl.DEPTH_TEST);
-	//--quad ground --
-	//must reach 
-	// x = -2:2 , i.e. (0:1*4) -2
-	// y = -1 fixed i.e. 0 -1
-	// z = -5:-1, i.e (0:1*4) -5
-	let trsMatrix_ground = scalem(4, 1, 4);
-	trsMatrix_ground = mult(translate(-2, -1, -5), trsMatrix_ground);
-	gl.uniformMatrix4fv(uniforms_ground.trsMatrix, false, flatten(trsMatrix_ground));
+	
+	//camera matrix
+	let FieldOfViewY = 120; //deg ... width off how the lightsource view the scene, to narrow cause wierd edge effects
+	let lightProjRatio = OFFSCREEN_WIDTH / OFFSCREEN_HEIGHT; // should be 1:1
+	let near = 1.0;
+	let far = 100.0;
+	let light_perMatrix = perspective(FieldOfViewY, lightProjRatio, near, far);
+	let upVec = vec3(0.0, 10.0, 0.0);//we just need the orientation... it will adjust itself
+	let lightTarget = vec3(0.0, -1.0, -2.0);// The point it rotate around
+	let light_pos3dim = vec3(light_pos[0], light_pos[1], light_pos[2]);
+	let light_camera_matrix = lookAt(light_pos3dim, lightTarget, upVec);
+
+	//calculate depthmap... must be updated for each frame to compensate for changed direction of light
+	use_depthbuffer();
+	//real object
+	gl.useProgram(program_lightdepth);
 	gl.depthFunc(gl.LESS);
-	gl.bindTexture(gl.TEXTURE_2D, g_texture1); // make our new texture the current one
+	gl.uniformMatrix4fv(uniforms_ligthdepth.camera_Matrix, false, flatten(light_camera_matrix));
+	gl.uniformMatrix4fv(uniforms_ligthdepth.proj_Matrix, false, flatten(light_perMatrix));
+	gl.uniformMatrix4fv(uniforms_ligthdepth.trsMatrix, false, flatten(trsMatrix_teapot));
+	send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program_lightdepth);	
+	index_buffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
+	gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	gl.deleteBuffer(index_buffer);
+
+	gl.uniformMatrix4fv(uniforms_ligthdepth.trsMatrix, false, flatten(trsMatrix_ground));
+	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_lightdepth);
+	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
+	
+	use_framebuffer();
+	gl.useProgram(program_ground);
+	gl.enable(gl.DEPTH_TEST);
+	gl.uniformMatrix4fv(uniforms_ground.trsMatrix, false, flatten(trsMatrix_ground));
+	gl.uniformMatrix4fv(uniforms_ground.lightProjMatrix, false, flatten(light_perMatrix));
+	gl.uniformMatrix4fv(uniforms_ground.lightCamMatrix, false, flatten(light_camera_matrix));
+	gl.depthFunc(gl.LESS);
+	gl.uniform1i(uniforms_ground.shadow_map, 1);  // assign the shadow to TEXTURE1
+	gl.activeTexture(gl.TEXTURE1); // Set a texture object to the texture unit
+	gl.bindTexture(gl.TEXTURE_2D, fbo.texture);
+
 	gl.uniform1i(uniforms_ground.is_a_shadow, false);
 	gl.uniformMatrix4fv(uniforms_ground.camera_Matrix, false, flatten(camera_view_matrix));
 	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_ground);
@@ -230,38 +287,25 @@ function render()
 
 	//start drawing teapot
 	gl.useProgram(program_obj);
+
 	gl.uniform4fv(uniforms_obj.lightPos, flatten(light_pos));
-	let trsMatrix_teapot = mat4();
-	if (should_rotate_teapot)
-	{
-		trsMatrix_teapot = mult(rotateY(-time),scalem(0.25,0.25,0.25));
-	}else
-	{
-		trsMatrix_teapot = scalem(0.25,0.25,0.25);
-	}
-
-	if(should_teapot_move)
-	{
-		trsMatrix_teapot = mult(translate(0.0,-0.75 + 0.25*Math.sin(.2*time),-3.0),trsMatrix_teapot);
-	}else
-	{
-		trsMatrix_teapot = mult(translate(0.0,-1.00 ,-3.0),trsMatrix_teapot);
-	}
-
 	gl.uniformMatrix4fv(uniforms_obj.trsMatrix, false, flatten(trsMatrix_teapot));
-	
-	//shadow
-	gl.depthFunc(gl.GREATER);
-	gl.uniform1i(uniforms_obj.is_a_shadow, true);
 	gl.uniformMatrix4fv(uniforms_obj.proj_Matrix, false, flatten(camera_persMatrix));
-	gl.uniformMatrix4fv(uniforms_obj.camera_Matrix, false, flatten(s_camera_Matrix));
-	send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program_obj);
-	send_floats_to_attribute_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program_obj);
-	send_floats_to_attribute_buffer("a_Color", g_drawingInfo.colors, 4, gl, program_obj);
-	let index_buffer = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
-	gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
+	//shadow
+
+	// gl.depthFunc(gl.GREATER);
+	// gl.uniform1i(uniforms_obj.is_a_shadow, true);
+	
+	// gl.uniformMatrix4fv(uniforms_obj.camera_Matrix, false, flatten(s_camera_Matrix));
+	// send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program_obj);
+	// send_floats_to_attribute_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program_obj);
+	// send_floats_to_attribute_buffer("a_Color", g_drawingInfo.colors, 4, gl, program_obj);
+	// index_buffer = gl.createBuffer();
+	// gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+	// gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
+	// gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
+	// gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	// gl.deleteBuffer(index_buffer);	
 
 	//real object
 	gl.depthFunc(gl.LESS);
@@ -275,40 +319,7 @@ function render()
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
 	gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	gl.deleteBuffer(index_buffer);
-	gl.useProgram(program_lightdepth);
-	
-	//calculate depthmap... must be updated for each frame to compensate for changed direction of light
-	use_depthbuffer();
-
-	
-	let FieldOfViewY = 70; //deg
-	let lightProjRatio = OFFSCREEN_WIDTH / OFFSCREEN_HEIGHT; // should be 1:1
-	let near = 1.0;
-	let far = 100.0;
-	let light_perMatrix = perspective(FieldOfViewY, lightProjRatio, near, far);
-	let upVec = vec3(0.0, 10.0, 0.0);//we just need the orientation... it will adjust itself
-	let lightTarget = vec3(0.0, -1.0, -2.0);// The point it rotate around
-	let light_pos3dim = vec3(light_pos[0], light_pos[1], light_pos[2]);
-	let light_camera_matrix = lookAt(light_pos3dim, lightTarget, upVec);
-	
-	//real object
-	gl.depthFunc(gl.LESS);
-	gl.uniformMatrix4fv(uniforms_ligthdepth.camera_Matrix, false, flatten(light_camera_matrix));
-	gl.uniformMatrix4fv(uniforms_ligthdepth.proj_Matrix, false, flatten(light_perMatrix));
-	gl.uniformMatrix4fv(uniforms_ligthdepth.trsMatrix, false, flatten(trsMatrix_teapot));
-	send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program_lightdepth);	
-	index_buffer = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
-	gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	gl.deleteBuffer(index_buffer);
-
-	gl.uniformMatrix4fv(uniforms_ligthdepth.trsMatrix, false, flatten(trsMatrix_ground));
-	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_lightdepth);
-	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
-	
+	gl.deleteBuffer(index_buffer);	
 
 	requestAnimationFrame(render);
 
@@ -316,6 +327,7 @@ function render()
 function use_depthbuffer()
 { 	
 	gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);               // Change the drawing destination to FBO
+	gl.clearColor(1.0, 1.0, 1.0, 1.0); //It looks better when starting from a close distance
 	gl.viewport(0, 0, OFFSCREEN_HEIGHT, OFFSCREEN_HEIGHT); // Set view port for FBO
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);   // Clear FBO    
 }
@@ -323,6 +335,7 @@ function use_depthbuffer()
 function use_framebuffer()
 {
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);               // Change the drawing destination to color buffer
-    gl.viewport(0, 0, canvas.width, canvas.height);
+	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
+	gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);    // Clear color and depth buffer
 }
