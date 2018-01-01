@@ -215,6 +215,7 @@ function render()
 	let view_light_depth = document.getElementById("view_light_depth").checked;
 	let disable_teapot_shadowmapping = document.getElementById("disable_teapot_shadowmapping").checked;
 	let draw_shadow_projection_ground = document.getElementById("draw_shadow_projection_ground").checked;
+	let show_ground =  document.getElementById("show_ground").checked;
 
 	
 	time++;
@@ -225,6 +226,7 @@ function render()
 	//Uncaught normalize: vector -0.9688915258909286,2.956082375889767,2.9819414985431227 has zero length
 
 
+	let reflection_matrix = gen_reflection_matrix(vec3(0,-1,0),vec3(0,0,0));
 	let trsMatrix_teapot = mat4();
 	if (should_rotate_teapot)
 	{
@@ -233,10 +235,9 @@ function render()
 	{
 		trsMatrix_teapot = scalem(0.25,0.25,0.25);
 	}
-	let reflection_matrix = gen_reflection_matrix(vec3(0,1,0),vec3(0,0,0));
 	if(should_teapot_move)
 	{
-		trsMatrix_teapot = mult(translate(0.0,-0.75 + 0.25*Math.sin(.2*time),-3.0),trsMatrix_teapot);
+		trsMatrix_teapot = mult(translate(0.0,-0.5 + 0.5*Math.sin(.2*time),-3.0),trsMatrix_teapot);
 	}else
 	{
 		trsMatrix_teapot = mult(translate(0.0,-1.00 ,-3.0),trsMatrix_teapot);
@@ -331,29 +332,33 @@ function render()
 		
 
 	//ground
+	if(show_ground)
+	{
+		gl.useProgram(program_ground);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); //this works well with our reflection
 
-	gl.useProgram(program_ground);
-	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); //this works well with our reflection
+		
+		gl.enable(gl.BLEND);
+		gl.enable(gl.DEPTH_TEST);
+		gl.uniformMatrix4fv(uniforms_ground.trsMatrix, false, flatten(trsMatrix_ground));
+		gl.uniformMatrix4fv(uniforms_ground.lightProjMatrix, false, flatten(light_perMatrix));
+		gl.uniformMatrix4fv(uniforms_ground.lightCamMatrix, false, flatten(light_camera_matrix));
+		gl.depthFunc(gl.LESS);
+		gl.uniform1i(uniforms_ground.shadow_map, 1);  // assign the shadow to TEXTURE1
+		gl.activeTexture(gl.TEXTURE1); // Set a texture object to the texture unit
+		gl.bindTexture(gl.TEXTURE_2D, fbo.texture);
 
+		gl.uniform1i(uniforms_ground.is_a_shadow, false);
+		gl.uniformMatrix4fv(uniforms_ground.camera_Matrix, false, flatten(camera_view_matrix));
+		send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_ground);
+		gl.drawArrays(rect.drawtype, 0, rect.drawCount);
+		gl.disable(gl.BLEND);
+
+	}
 	
-	gl.enable(gl.BLEND);
-	gl.enable(gl.DEPTH_TEST);
-	gl.uniformMatrix4fv(uniforms_ground.trsMatrix, false, flatten(trsMatrix_ground));
-	gl.uniformMatrix4fv(uniforms_ground.lightProjMatrix, false, flatten(light_perMatrix));
-	gl.uniformMatrix4fv(uniforms_ground.lightCamMatrix, false, flatten(light_camera_matrix));
-	gl.depthFunc(gl.LESS);
-	gl.uniform1i(uniforms_ground.shadow_map, 1);  // assign the shadow to TEXTURE1
-	gl.activeTexture(gl.TEXTURE1); // Set a texture object to the texture unit
-	gl.bindTexture(gl.TEXTURE_2D, fbo.texture);
-
-	gl.uniform1i(uniforms_ground.is_a_shadow, false);
-	gl.uniformMatrix4fv(uniforms_ground.camera_Matrix, false, flatten(camera_view_matrix));
-	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_ground);
-	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
-	gl.disable(gl.BLEND);
-
 	// indicate the light source shadow
 	// this is not specified in excercise but helps to understand what is going on
+	gl.useProgram(program_ground);
 	gl.depthFunc(gl.LESS);
 	gl.uniform1i(uniforms_ground.is_a_shadow, false);
 	trsMatrix = mat4()
