@@ -77,7 +77,7 @@
    
             N = normalize((camera_Matrix*trsMatrix*normal_mod).xyz); //normalized Normal vector
             v_PositionFromLight = lightProjMatrix* lightCamMatrix* trsMatrix * a_Position;
-            gl_Position = proj_Matrix  *camera_Matrix  * trsMatrix *reflection_matrix* a_Position;
+            gl_Position = proj_Matrix  *camera_Matrix  *reflection_matrix* trsMatrix * a_Position;
             v_Color = a_Color;
             v_Normal = a_Normal;
 	    }

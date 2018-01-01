@@ -31,24 +31,24 @@ function gen_reflection_matrix(  v_normal,pos)
 	pos_dot_norm = dot(pos,v_normal);
 
 	R[0][0] = 1 - 2*(v_normal[0]*v_normal[0]);
-	R[0][1] = -2*(v_normal[0]*v_normal[1]);
-	R[0][2] = -2*(v_normal[0]*v_normal[2]);
-	R[0][3] = 0;
-	R[1][0] = -2*(v_normal[1]*v_normal[0]);
+	R[1][0] = -2*(v_normal[0]*v_normal[1]);
+	R[2][0] = -2*(v_normal[0]*v_normal[2]);
+	R[3][0] = 0;
+	R[0][1] = -2*(v_normal[1]*v_normal[0]);
 	R[1][1] = 1-2*(v_normal[1]*v_normal[1]);
-	R[1][2] = -2*(v_normal[1]*v_normal[2]);
-	R[1][3] = 0;
-	R[2][0] = -2*(v_normal[2]*v_normal[0]);
-	R[2][1] = -2*(v_normal[2]*v_normal[1]);
+	R[2][1] = -2*(v_normal[1]*v_normal[2]);
+	R[3][1] = 0;
+	R[0][2] = -2*(v_normal[2]*v_normal[0]);
+	R[1][2] = -2*(v_normal[2]*v_normal[1]);
 	R[2][2] = 1-2*(v_normal[2]*v_normal[2]);
-	R[2][3] = 0;
-	R[2][0] = -2*(v_normal[2]*v_normal[0]);
-	R[2][1] = -2*(v_normal[2]*v_normal[1]);
+	R[3][2] = 0;
+	R[0][2] = -2*(v_normal[2]*v_normal[0]);
+	R[1][2] = -2*(v_normal[2]*v_normal[1]);
 	R[2][2] = 1-2*(v_normal[2]*v_normal[2]);
-	R[2][3] = 0;
-	R[3][0] = 2*(pos_dot_norm*v_normal[0]);
-	R[3][1] = 2*(pos_dot_norm*v_normal[1]);
-	R[3][2] = 2*(pos_dot_norm*v_normal[2]);
+	R[3][2] = 0;
+	R[0][3] = 2*(pos_dot_norm*v_normal[0]);
+	R[1][3] = 2*(pos_dot_norm*v_normal[1]);
+	R[2][3] = 2*(pos_dot_norm*v_normal[2]);
 	R[3][3] = 1;
 	return R;
 }
@@ -226,7 +226,8 @@ function render()
 	//Uncaught normalize: vector -0.9688915258909286,2.956082375889767,2.9819414985431227 has zero length
 
 
-	let reflection_matrix = gen_reflection_matrix(vec3(0,-1,0),vec3(0,0,0));
+	let reflection_matrix = gen_reflection_matrix(vec3(0, -1, 0), vec3(0,-1, -3));
+	printm(reflection_matrix);
 	let trsMatrix_teapot = mat4();
 	if (should_rotate_teapot)
 	{
