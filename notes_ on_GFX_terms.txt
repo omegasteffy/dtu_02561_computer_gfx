@@ -1,2 +1,13 @@
 What do affine mean (in relation to Affine transformations)
 Cull, the act of ignoring triangles/faces not facing user
+
+COP: Center of Projection. Similar to eye? Point with we project objects toward.
+Clipping Plane: Rectangle which is the cut-off point for projections. Similar to a screen.
+
+Shading types:
+	Flat: We assume the same l, n and v for the entire polygon, i.e. effectively the entire polygon will be the same color
+	Gouraud/Smooth: l,n,v is different for each vertex and light is calculated for each vertex. The rasterizer interpolate the light/color for each fragment
+	Phong: l,n,v er calculated fo
+
+Bling-Phong (aka modified Phong): Approximation of reflection in Phong, using halfway vector.
+		Rather than calculating the exact reflection from normal and light (r*v), we use norm(l+v)
