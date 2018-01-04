@@ -156,17 +156,17 @@
 
 <body>
     <table><tr>
-                <td>options</td>
+                <td>Options</td>
     </tr>
 
                 <tr><td>
-                    <input type="checkbox" id="move_teapot"> Move teapot up/down (Part2)
+                    <input type="checkbox" id="move_teapot" checked> Move teapot up/down
                 </td></tr>
                 <tr><td>
-                    <input type="checkbox" id="show_ground"> Show ground (Part2)
+                    <input type="checkbox" id="show_ground" checked> Show ground
                 </td></tr>
                 <tr><td>
-                        <input type="checkbox" id="rotate_teapot"> Rotate Teapot
+                        <input type="checkbox" id="rotate_teapot" checked> Rotate Teapot
                 </td></tr>
                 <tr><td>
                         <input type="checkbox" id="rotate_light" checked> Rotate Light source
@@ -180,14 +180,12 @@
                 <tr><td>
                     <input type="checkbox" id="disable_teapot_shadowmapping" checked> Do not apply shadow mapping on teapot
                 </td></tr>
-                <tr><td>
-                    <input type="checkbox" id="draw_shadow_projection_ground"> Draw the shadow projection on the ground
-                </td></tr>
-                
                 
                 
 
         </table>
+        <BR>
+        Stencil buffer implementation is inspired by the site <a href="https://open.gl/depthstencils">link</a>
 	<canvas id='draw_area' height="512" width="512" />
     <script src="../angel_common/initShaders.js"></script>
     <script src="../angel_common/webgl-utils.js"></script>
@@ -196,6 +194,7 @@
     <script src="../other_common/OBJParser.js"></script>
     <script src="../other_common/OBJLoadingHelper.js"></script>
     <script src="ws9_part3.js"></script>
+    
 </body>
 
 </html>

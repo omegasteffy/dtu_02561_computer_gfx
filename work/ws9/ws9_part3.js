@@ -214,7 +214,6 @@ function render()
 	let should_rotate_light = document.getElementById("rotate_light").checked;
 	let view_light_depth = document.getElementById("view_light_depth").checked;
 	let disable_teapot_shadowmapping = document.getElementById("disable_teapot_shadowmapping").checked;
-	let draw_shadow_projection_ground = document.getElementById("draw_shadow_projection_ground").checked;
 	let show_ground =  document.getElementById("show_ground").checked;
 
 	
@@ -302,10 +301,31 @@ function render()
 	}
 
 	use_framebuffer();
+	
+	 
+	//fill out the stencil buffer by drawing the ground and disabling output
+	gl.enable(gl.STENCIL_TEST);
+	gl.clear(gl.STENCIL_BUFFER_BIT); // Clear what ever might be in the stencil buffer
+	gl.stencilFunc(gl.ALWAYS, 1, 0xFF); // Set any stencil to 1
+	gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE); // a) action when stencil test fails, b) action when the stencil test passes, depth fails. c) both depth and stencil pass
+	gl.stencilMask(0xFF); // Write to stencil buffer FF equals allowing all bits to pass
+	gl.depthMask(false); // Don't write to depth buffer
+	gl.useProgram(program_lightdepth); //this program seems suitable since it is simple (we should not created more buffers)
+	gl.uniformMatrix4fv(uniforms_ligthdepth.trsMatrix, false, flatten(trsMatrix_ground));
+	gl.uniformMatrix4fv(uniforms_ligthdepth.proj_Matrix, false, flatten(camera_persMatrix));
+	gl.uniformMatrix4fv(uniforms_ligthdepth.camera_Matrix, false, flatten(camera_view_matrix));
+	send_floats_to_attribute_buffer("a_Position", rect.vertices, 3, gl, program_ground);
+	gl.colorMask(false,false,false, false); //Avoid drawing .. just fill the stencil buffer
+	gl.drawArrays(rect.drawtype, 0, rect.drawCount);
+	gl.colorMask(true,true,true,true); // after we have filled the stencil buffer we can enable drawing again
+	gl.depthMask(true); //re-enable depth test
+
 	//reflection drawing using the object program and apply the reflection matrix
 	//We draw this first because the reflection is simulated by making the ground transparent
 	gl.useProgram(program_obj);
-
+	gl.stencilFunc(gl.EQUAL, 1, 0xFF); // this time we draw if a 1 is found in the stencil buffer (this would mean it was set in previous call)
+	gl.stencilMask(0x00); //do not update the stencil buffer
+	
 	//apply all the uniforms and etc.
 	gl.uniform4fv(uniforms_obj.lightPos, flatten(light_pos));
 	gl.uniformMatrix4fv(uniforms_obj.trsMatrix, false, flatten(trsMatrix_teapot));
@@ -330,7 +350,9 @@ function render()
 	gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	gl.deleteBuffer(index_buffer);	
-		
+	
+	//Now we no longer need to perfom any stencil tests
+	gl.disable(gl.STENCIL_TEST);
 
 	//ground
 	if(show_ground)
@@ -380,24 +402,6 @@ function render()
 	gl.activeTexture(gl.TEXTURE1); // Set a texture object to the texture unit
 	gl.bindTexture(gl.TEXTURE_2D, fbo.texture);
 
-	
-	//shadow-projection ... if desired
-	if(draw_shadow_projection_ground)
-	{
-		gl.depthFunc(gl.GREATER);
-		gl.uniform1i(uniforms_obj.is_a_shadow, true);
-		
-		gl.uniformMatrix4fv(uniforms_obj.camera_Matrix, false, flatten(s_camera_Matrix));
-		send_floats_to_attribute_buffer("a_Position", g_drawingInfo.vertices, 3, gl, program_obj);
-		send_floats_to_attribute_buffer("a_Normal", g_drawingInfo.normals, 3, gl, program_obj);
-		send_floats_to_attribute_buffer("a_Color", g_drawingInfo.colors, 4, gl, program_obj);
-		index_buffer = gl.createBuffer();
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
-		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g_drawingInfo.indices), gl.STATIC_DRAW);
-		gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-		gl.deleteBuffer(index_buffer);	
-	}
 	//real object
 	gl.depthFunc(gl.LESS);
 	gl.uniform1i(uniforms_obj.is_a_shadow, false);
