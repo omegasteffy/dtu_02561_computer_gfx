@@ -227,7 +227,7 @@ function render()
 
 
 	let reflection_matrix = gen_reflection_matrix(vec3(0, -1, 0), vec3(0,-1, -3));
-	printm(reflection_matrix);
+
 	let trsMatrix_teapot = mat4();
 	if (should_rotate_teapot)
 	{
