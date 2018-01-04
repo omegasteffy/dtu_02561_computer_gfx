@@ -153,7 +153,7 @@ function setup_stuff()
 	}
 	console.trace("Setup started");	
 	canvas = document.getElementById('draw_area');
-	gl = WebGLUtils.setupWebGL(canvas);
+	gl = WebGLUtils.setupWebGL(canvas,{alpha:false}); //looks a lot better once browser influence is turned off
 
 	program_ground = initShaders(gl, "vert_for_ground", "frag_for_ground");
 	program_obj = initShaders(gl, "vert_for_obj", "frag_for_obj");
