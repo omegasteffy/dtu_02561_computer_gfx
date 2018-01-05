@@ -52,15 +52,27 @@ function gen_reflection_matrix(  v_normal,pos)
 	R[3][3] = 1;
 	return R;
 }
-function modifyProjectionMatrix(clipplane, projection) //copied directly from worksheet
+function modifyProjectionMatrix(clipplane, projection_matrix) //copied directly from worksheet
 {
+	if(!Array.isArray(clipplane))
+	{
+		throw ("bad argument, expect array");
+	}
+	if( 4 != clipplane.length )
+	{
+		throw ("bad argument, expect array of length 4");
+	}
+	if(projection_matrix.matrix !== true)
+	{
+		throw ("bad argument, expect matrix");
+	}
 	// MV.js has no copy-constructor for matrices'
-	let oblique = mult(mat4(), projection);
+	let oblique = mult(mat4(), projection_matrix);
 	let q = vec4( 	
-			(Math.sign(clipplane[0]) + projection[0][2])/projection[0][0],
-			(Math.sign(clipplane[1]) + projection[1][2])/projection[1][1],
+			(Math.sign(clipplane[0]) + projection_matrix[0][2])/projection_matrix[0][0],
+			(Math.sign(clipplane[1]) + projection_matrix[1][2])/projection_matrix[1][1],
 			-1.0,
-			(1.0 + projection[2][2])/projection[2][3]
+			(1.0 + projection_matrix[2][2])/projection_matrix[2][3]
 		);
 		let  s = 2.0/dot(clipplane, q);
 		oblique[2] = vec4(clipplane[0]*s, clipplane[1]*s, clipplane[2]*s + 1.0, clipplane[3]*s);    
@@ -266,15 +278,19 @@ function render()
 	trsMatrix_ground = mult(translate(-2, -1, -5), trsMatrix_ground);
 	
 	//calculate the plane vec4 describtion for the modified clip-plane
-	let ground_pos = vec3(-2,-1,-5);
-	let ground_normal = vec3(0,1,0);
+	let ground_pos = vec4(-2,-1,-5,0);
+	let ground_normal = vec4(0,1,0,0);
 	//a(x -x_0) + b(y - y_0) + c(z - z_0) + d =0
 	//0 *(x - -2 ) + 1(y - -1) + 0 (z - -5  )  + d = 0
 	//0x + 1y +1  + 0z +d =0
 	//0x + 1y  + 0z +1 =0
-	let ground_plane = vec4(0,1,0,1);
-	
-	
+	let plane_eqn2 = ground_normal;
+	plane_eqn2[3] = -dot(ground_pos,ground_normal);
+
+	let mod_ground_pos = mult(g_camera_Matrix,ground_pos);
+	let mod_ground_norm = mult(g_camera_Matrix,ground_normal);
+	let plane_eqn = mod_ground_norm;
+	plane_eqn[3] = -dot(mod_ground_pos,mod_ground_norm);
 
 
 	// model-view matrix for projection-shadow... must be updated since the light move around
@@ -351,11 +367,12 @@ function render()
 	gl.useProgram(program_obj);
 	gl.stencilFunc(gl.EQUAL, 1, 0xFF); // this time we draw if a 1 is found in the stencil buffer (this would mean it was set in previous call)
 	gl.stencilMask(0x00); //do not update the stencil buffer
-	
+	let mod_proj_matrix=modifyProjectionMatrix(plane_eqn,camera_persMatrix) ;
 	//apply all the uniforms and etc.
 	gl.uniform4fv(uniforms_obj.lightPos, flatten(light_pos));
 	gl.uniformMatrix4fv(uniforms_obj.trsMatrix, false, flatten(trsMatrix_teapot));
-	gl.uniformMatrix4fv(uniforms_obj.proj_Matrix, false, flatten(camera_persMatrix));
+	//gl.uniformMatrix4fv(uniforms_obj.proj_Matrix, false, flatten(modifyProjectionMatrix(camera_persMatrix,ground_plane) ));
+	gl.uniformMatrix4fv(uniforms_obj.proj_Matrix, false, flatten( mod_proj_matrix ));
 	gl.uniformMatrix4fv(uniforms_obj.lightProjMatrix, false, flatten(light_perMatrix));
 	gl.uniformMatrix4fv(uniforms_obj.lightCamMatrix, false, flatten(light_camera_matrix));
 	gl.uniform1i(uniforms_obj.shadow_map, 1);  // assign the shadow to TEXTURE1
