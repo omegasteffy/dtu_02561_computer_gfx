@@ -278,31 +278,40 @@ function render()
 	trsMatrix_ground = mult(translate(-2, -1, -5), trsMatrix_ground);
 	
 	//calculate the plane vec4 describtion for the modified clip-plane
-	let ground_pos = vec4(-2,-1,-5,0);
-	let ground_normal = vec4(0,1,0,0);
-	//a(x -x_0) + b(y - y_0) + c(z - z_0) + d =0
-	//0 *(x - -2 ) + 1(y - -1) + 0 (z - -5  )  + d = 0
-	//0x + 1y +1  + 0z +d =0
-	//0x + 1y  + 0z +1 =0
-	let plane_eqn2 = ground_normal;
-	plane_eqn2[3] = -dot(ground_pos,ground_normal);
+	//We use vec4, to make to avoid extra indexing afterward
+	let ground_pos = vec4(0,-1,-3,0); //This is in the middle of the plane
+	let ground_normal = vec4(0,1,0,0); // The normal point upward
 
-	let mod_ground_pos = mult(g_camera_Matrix,ground_pos);
-	let mod_ground_norm = mult(g_camera_Matrix,ground_normal);
-	let plane_eqn = mod_ground_norm;
-	plane_eqn[3] = -dot(mod_ground_pos,mod_ground_norm);
+	//This is the text book explanation of how the coordinate+normal
+	//
+	//   a(x -x_0) + b(y - y_0) + c(z - z_0) + d =0
+	//   0 *(x - -0 ) + 1(y - -1) + 0 (z - -3  )  + d = 0
+	//   0x + 1y +1  + 0z +d =0
+	//  0x + 1y  + 0z +1 =0
+    // This is the same as [normal.xyz, -dot(point,normal) ]
 
+
+	//Put these vectors into eye-space by multiplying with the camera transformation
+	let ground_pos_transformed =  mult(g_camera_Matrix,ground_pos); 
+	let ground_normal_transformed  = mult(g_camera_Matrix,ground_normal);
+	let plane_eqn = ground_normal_transformed;
+	plane_eqn[3] = dot(ground_pos_transformed,ground_normal_transformed);
+
+    //since i did not get it to work i attempted to play a bit with the number... 4x scaling and no transformation was the closest i got to a good looking result
+	//... i also tried several other things including adding projection transform to the plane vectors and several other attempts, but no luck
+	let alternative_ground_pos = vec4(0,-4,-3,0);
+	let plane_eqn_alternative = alternative_ground_pos;
+	plane_eqn_alternative[3] = -dot(alternative_ground_pos,ground_normal);
+	
+	//change to 'plane_eqn_alternative' to test the other plane
+	let proj_matrix_planeclip = modifyProjectionMatrix(plane_eqn,camera_persMatrix) ;
 
 	// model-view matrix for projection-shadow... must be updated since the light move around
 	let m = mat4();
 	m[3][3] = 0;
 	m[3][1] = -1 / (light_pos[1] -  (-1.001)); // a small offset from -1.0 to avoid z-fighting... we actually draw it a bit beneath the ground, but have toggled the z-depth test when we draw it
 	let camera_view_matrix = camera_above   ? g_camera_top_Matrix :  g_camera_Matrix;
-	let s_camera_Matrix = mult(camera_view_matrix, translate(light_pos[0], light_pos[1], light_pos[2]));
-	s_camera_Matrix = mult(s_camera_Matrix, m);
-	s_camera_Matrix = mult(s_camera_Matrix, translate(-light_pos[0], -light_pos[1], -light_pos[2]));
 
-	
 	//camera matrix
 	let FieldOfViewY = 100; //deg ... width off how the lightsource view the scene, to narrow cause wierd edge effects
 	let lightProjRatio = OFFSCREEN_WIDTH / OFFSCREEN_HEIGHT; // should be 1:1
@@ -367,12 +376,12 @@ function render()
 	gl.useProgram(program_obj);
 	gl.stencilFunc(gl.EQUAL, 1, 0xFF); // this time we draw if a 1 is found in the stencil buffer (this would mean it was set in previous call)
 	gl.stencilMask(0x00); //do not update the stencil buffer
-	let mod_proj_matrix=modifyProjectionMatrix(plane_eqn,camera_persMatrix) ;
+	
 	//apply all the uniforms and etc.
 	gl.uniform4fv(uniforms_obj.lightPos, flatten(light_pos));
 	gl.uniformMatrix4fv(uniforms_obj.trsMatrix, false, flatten(trsMatrix_teapot));
-	//gl.uniformMatrix4fv(uniforms_obj.proj_Matrix, false, flatten(modifyProjectionMatrix(camera_persMatrix,ground_plane) ));
-	gl.uniformMatrix4fv(uniforms_obj.proj_Matrix, false, flatten( mod_proj_matrix ));
+	//gl.uniformMatrix4fv(uniforms_obj.proj_Matrix, false, flatten(camera_persMatrix) ));
+	gl.uniformMatrix4fv(uniforms_obj.proj_Matrix, false, flatten( proj_matrix_planeclip ));
 	gl.uniformMatrix4fv(uniforms_obj.lightProjMatrix, false, flatten(light_perMatrix));
 	gl.uniformMatrix4fv(uniforms_obj.lightCamMatrix, false, flatten(light_camera_matrix));
 	gl.uniform1i(uniforms_obj.shadow_map, 1);  // assign the shadow to TEXTURE1
