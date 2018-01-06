@@ -242,7 +242,7 @@ function render()
 	let view_light_depth = document.getElementById("view_light_depth").checked;
 	let disable_teapot_shadowmapping = document.getElementById("disable_teapot_shadowmapping").checked;
 	let show_ground =  document.getElementById("show_ground").checked;
-
+	let camera_view_matrix = camera_above   ? g_camera_top_Matrix :  g_camera_Matrix;
 	
 	time++;
 	const initial_light_pos = vec4(-2,2,2,1);
@@ -304,13 +304,7 @@ function render()
 	plane_eqn_alternative[3] = -dot(alternative_ground_pos,ground_normal);
 	
 	//change to 'plane_eqn_alternative' to test the other plane
-	let proj_matrix_planeclip = modifyProjectionMatrix(plane_eqn,camera_persMatrix) ;
-
-	// model-view matrix for projection-shadow... must be updated since the light move around
-	let m = mat4();
-	m[3][3] = 0;
-	m[3][1] = -1 / (light_pos[1] -  (-1.001)); // a small offset from -1.0 to avoid z-fighting... we actually draw it a bit beneath the ground, but have toggled the z-depth test when we draw it
-	let camera_view_matrix = camera_above   ? g_camera_top_Matrix :  g_camera_Matrix;
+	let proj_matrix_planeclip = modifyProjectionMatrix(plane_eqn,camera_persMatrix);
 
 	//camera matrix
 	let FieldOfViewY = 100; //deg ... width off how the lightsource view the scene, to narrow cause wierd edge effects
