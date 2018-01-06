@@ -1,0 +1,32 @@
+<html>
+	<title>Worksheet 1 - Part 2</title>
+	
+<script id="vert1" type="x-shader/x-vertex" >
+	attribute vec4 a_Position;
+	void main()
+	{
+		gl_PointSize = 20.0;
+		gl_Position = a_Position;
+	}
+</script>
+<script id="frag1" type="x-shader/x-fragment" >
+	precision mediump float;
+	void main()
+	{
+		gl_FragColor = vec4(1.0, 1.0, 0.0, 	1.0);
+	}
+</script>
+
+<body>
+	<h1>Worksheet 1 - Part 2</h1>
+	<div>
+		We have added a basic vertex/fragment shaders to the html + draw 3x points
+	</div>
+	<canvas id='draw_area' height="512" width="512" />
+	<script src="../angel_common/initShaders.js" ></script>
+	<script src="../angel_common/webgl-utils.js" ></script>
+	<script src="../angel_common/MV.js" ></script>
+	<script src="ws1_part2.js"></script>
+</body>
+
+</html>
