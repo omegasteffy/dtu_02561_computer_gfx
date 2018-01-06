@@ -13,14 +13,13 @@ const vertices = new Float32Array(
     1.0,1.0,] //top right
 )
 
-const colors = new Float32Array(
-	[1.0, 0.0, 0.0, 1.0, //Red
-		0.0, 0.0, 1.0, 1.0, //Green
-		0.0, 1.0, 0.0, 1.0] //Blue
-);
+const colors = [
+        CommonColors.red,
+        CommonColors.blue,
+        CommonColors.green];
 
 send_floats_to_attribute_buffer("a_Position",vertices,2,gl,program);
-send_floats_to_attribute_buffer("a_Color",colors,4,gl,program);
+send_floats_to_attribute_buffer("a_Color",flatten(colors),4,gl,program);
 gl.clear(gl.COLOR_BUFFER_BIT); 
 gl.drawArrays(gl.TRIANGLES,0,3);
 console.trace("Ended");
