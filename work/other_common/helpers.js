@@ -6,7 +6,7 @@
 /**
  * Will send an array of floats to the target-buffer within the gl-program
  * @param {any} buffername Name of the attribute-buffer within the gl-program
- * @param {any} input_data Data to forward
+ * @param {any} input_data Data to forward MUST be in a Float32Array
  * @param {any} data_dimension How many dimensions is the data in the gl-program?, e.g. 3 for a vec3
  * @param {any} gl				GL-object.
  * @param {any} program			The compiled gl-program
@@ -14,16 +14,17 @@
 function send_floats_to_attribute_buffer(buffername, input_data, data_dimension, gl, program) {
 	let buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffer); // make it the current buffer assigned in WebGL
-	gl.bufferData(gl.ARRAY_BUFFER, input_data, gl.STATIC_DRAW);//link the JS-points and the 
+	gl.bufferData(gl.ARRAY_BUFFER, input_data, gl.STATIC_DRAW);//throw in the data
 	let attribLocation = gl.getAttribLocation(program, buffername); // setup a pointer to match the 
 	gl.vertexAttribPointer(attribLocation, data_dimension, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(attribLocation);
+	gl.bindBuffer(gl.ARRAY_BUFFER, null); //un-bind current buffer again
 }
 
 /**
  * Will send an array of js-arrays into the target-buffer within the gl-program
  * @param {any} buffername Name of the attribute-buffer within the gl-program
- * @param {any} input_data Data to forward
+ * @param {any} input_data Data to forward in array or vec2/3/4 form
  * @param {any} data_dimension How many dimensions is the data in the gl-program?, e.g. 3 for a vec3
  * @param {any} gl				GL-object.
  * @param {any} program			The compiled gl-program
