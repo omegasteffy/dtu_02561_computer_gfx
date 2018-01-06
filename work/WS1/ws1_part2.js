@@ -12,8 +12,6 @@ const vertices = new Float32Array(
     0.0,1.0,
     1.0,1.0]
 )
-
-const uniforms = cacheUniformLocations(gl,program); // a tool to ease the access to uniforms
 send_floats_to_attribute_buffer("a_Position",vertices,2,gl,program);
 gl.clear(gl.COLOR_BUFFER_BIT); 
 gl.drawArrays(gl.POINTS,0,3);
