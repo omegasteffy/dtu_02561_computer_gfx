@@ -1,0 +1,16 @@
+In this excercise we will attempt to generate a landscape using a 2D noise function and perhabs compare it against at textured.
+The generated 
+
+Programming! [EP1] - 2D Perlin Noise - https://www.youtube.com/watch?v=Or19ilef4wE
+https://digitalerr0r.wordpress.com/2011/05/25/procedural-landscapes-using-perlin-noise/
+https://shanee.io/blog/2015/09/25/procedural-island-generation/
+A function only Landscape : Part Three - A Detour into Perlin's Noise - https://www.planetside.co.uk/forums/index.php?topic=1168.0 
+Gpu gems - https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch01.html
+Fake landscapes - https://nbickford.wordpress.com/2012/12/21/creating-fake-landscapes/
+3DMandelbrot - http://www.skytopia.com/project/fractal/mandelbulb.html
+
+Shader toy examples
+https://www.shadertoy.com/view/lsf3WH
+https://www.shadertoy.com/view/XtsXRn
+https://www.shadertoy.com/view/Msf3Wr
+
