@@ -1,23 +1,22 @@
 <html>
-	<title>Something something</title>
+    <title>Worksheet 1 - Part 4</title>
 
 
-    <script id="vert1" type="x-shader/x-vertex" >
-	    attribute vec4 vPosition;
-        attribute vec4 vColor;
+    <script id="vert" type="x-shader/x-vertex" >
+	    attribute vec4 a_Position;
+        attribute vec4 a_Color;
         uniform float theta;
         varying vec4 v_color;
 	    void main()
 	    {
-		   // gl_PointSize = 20.0;
-		    gl_Position.x = - sin(theta) * vPosition.x + cos(theta)*vPosition.y;
-        gl_Position.y = sin(theta) * vPosition.y + cos(theta)*vPosition.x;
-        gl_Position.z = 0.0;
-        gl_Position.w = 1.0;
-            v_color = vColor;
+            gl_Position.x = - sin(theta) * a_Position.x + cos(theta)*a_Position.y;
+            gl_Position.y =   sin(theta) * a_Position.y + cos(theta)*a_Position.x;
+            gl_Position.z = 0.0;
+            gl_Position.w = 1.0;
+            v_color = a_Color;
 	    }
     </script>
-    <script id="frag1" type="x-shader/x-fragment" >
+    <script id="frag" type="x-shader/x-fragment" >
 	    precision mediump float;
         varying vec4 v_color;
 	    void main()
@@ -26,11 +25,19 @@
 	    }
     </script>
 <body>
+    <h1>Worksheet 1 - Part 4</h1>
+	<div>
+        The rectangle is drawn as a triangle strip.<br/>
+        Rotation is handled in vertex shader<br/>
+		To make the animation happen we must set the callback function 'requestAnimationFrame()' each time
+	</div>
 	<canvas id='draw_area' height="512" width="512" />
     <script src="../angel_common/initShaders.js"></script>
     <script src="../angel_common/webgl-utils.js"></script>
     <script src="../angel_common/MV.js"></script>
-    <script src="ws1_part5.js"></script>
+    <script src="../other_common/helpers.js"></script>
+    <script src="../other_common/shapes.js"></script>
+    <script src="ws1_part4.js"></script>
 </body>
 
 </html>
