@@ -1,9 +1,7 @@
 console.trace("Started");
 let canvas = document.getElementById('draw_area');
-
-let     gl = WebGLUtils.setupWebGL(canvas);
-
-let program = initShaders(gl,"vert1","frag1");
+let gl = WebGLUtils.setupWebGL(canvas);
+let program = initShaders(gl,"vert","frag");
 
 gl.useProgram(program);
 gl.viewport( 0.0 ,0.0, canvas.width,canvas.height)
@@ -15,14 +13,8 @@ const vertices = new Float32Array(
     1.0,1.0]
 )
 
-let buffer = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER,buffer); // make it the current buffer assigned in WebGL
-gl.bufferData(gl.ARRAY_BUFFER,vertices,gl.STATIC_DRAW);//link the JS-points and the 
-
-let vPos = gl.getAttribLocation(program,"a_Position"); // setup a pointer to match the 
-gl.vertexAttribPointer(vPos,2,gl.FLOAT,false,0,0);
-gl.enableVertexAttribArray(vPos);
-
+const uniforms = cacheUniformLocations(gl,program); // a tool to ease the access to uniforms
+send_floats_to_attribute_buffer("a_Position",vertices,2,gl,program);
 gl.clear(gl.COLOR_BUFFER_BIT); 
 gl.drawArrays(gl.POINTS,0,3);
 
