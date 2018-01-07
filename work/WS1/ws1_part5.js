@@ -2,28 +2,7 @@ let gl;
 let program;
 let uniforms;
 let circle;
-function circle_2d(gl,no_points)
-{
-	if( 5 > no_points)
-	{
-		throw("At least 5 points are required!");
-	}
-	let x = {};
-	x.vertices = new Float32Array(2*(no_points+2));
-	const angle_per_point = 2*Math.PI/no_points;
-	// draw the center
-	x.vertices[0] =0;
-	x.vertices[1] =0;
-	for (let n = 1; n < no_points+2; n++)
-	{
-		x.vertices[2*n] = 0.5* Math.cos(angle_per_point * n );
-		x.vertices[2*n +1 ] = 0.5* Math.sin(angle_per_point * n );
-	}
-	x.perDrawing = 2;
-	x.drawCount = no_points+2;
-	x.drawtype = gl.TRIANGLE_FAN;
-	return x;
-}
+let y_offset = 0.1;
 
 function setup_stuff() 
 {
@@ -37,13 +16,16 @@ function setup_stuff()
 	gl.useProgram(program);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
-
-	circle = circle_2d(gl,8);
-	send_floats_to_attribute_buffer("a_Position",circle.vertices,circle.perDrawing,gl,program);
-	requestAnimationFrame(render); 
+	setup_circle();
+	document.getElementById("subdivision_slider").onchange = setup_circle;
+	requestAnimationFrame(render);
 }
-var y_offset = 0.1;
-
+function setup_circle()
+{
+	let num_stops_on_circle = document.getElementById("subdivision_slider").value;
+	circle = circle_2d(gl,num_stops_on_circle);
+	send_floats_to_attribute_buffer("a_Position",circle.vertices,circle.perDrawing,gl,program);
+}
 
 function render()
 {
@@ -54,4 +36,4 @@ function render()
 	requestAnimationFrame(render); 
 }
 
-setup_stuff();
+setup_stuff(); // start

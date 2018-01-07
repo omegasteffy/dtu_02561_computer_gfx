@@ -17,12 +17,32 @@
 		    gl_FragColor = vec4 (1.0  ,1.0, 1.0, 0.0);
 	    }
     </script>
+
 <body>
     <h1>Worksheet 1 - Part 5</h1>
 	<div>
-        The rectangle is drawn as a triangle strip.<br/>
+        The rectangle is drawn as a triangle fan .<br/>
         Movement is handled in the vertex shader
-	</div>
+    </div>
+    <table>
+                <tr>
+                    <td> Circle subdivisions</td>
+                    <td><input type="range" min="5" max="40" id="subdivision_slider"></td>
+                    <td id="subdivision_value"></td>
+                </tr>
+            </table>
+        <script>
+                function link_input_and_text(input_id, value_id, initial_value)
+                {
+                    document.getElementById(input_id).oninput = function ()
+                    {
+                        document.getElementById(value_id).innerHTML = document.getElementById(input_id).value;
+                    };
+                    document.getElementById(value_id).innerHTML = initial_value;
+                    document.getElementById(input_id).value = initial_value;
+                }
+                link_input_and_text("subdivision_slider", "subdivision_value", 6);
+            </script>
 	<canvas id='draw_area' height="512" width="512" />
     <script src="../angel_common/initShaders.js"></script>
     <script src="../angel_common/webgl-utils.js"></script>
