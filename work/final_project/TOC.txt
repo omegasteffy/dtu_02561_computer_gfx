@@ -1,0 +1,11 @@
+Abstract
+Context/usage
+Show noise function
+Setup
+  2D-grid 
+  Vertex shader: Calculate height
+  Fragment shader calculate lightning + apply texture
+
+Implementation
+Details + Fine funing
+Conclussion / further improvement
