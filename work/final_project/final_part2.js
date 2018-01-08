@@ -3,7 +3,7 @@ let gl;
 let program;
 let uniforms;
 let stuff;
-
+let time;
 
 /**
  * Create coordinates for a rectangle
@@ -197,15 +197,18 @@ function setup_stuff()
 	gl.drawElements(gl.LINES, stuff.line_indecies.length, gl.UNSIGNED_SHORT, 0);
 
 //	gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectSpec.drawCount);
-//	render(); // no need for since we only have a static image
+	time=0.0;
+render(); // no need for since we only have a static image
+
 }
 
 
 function render()
 {	
-
+	time=time+.1;
+	gl.uniform1f(uniforms.time,time);
 	gl.clear(gl.COLOR_BUFFER_BIT);
 //	gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectSpec.drawCount);
-gl.drawElements(gl.TRIANGLES, stuff.indecies.length/3, gl.UNSIGNED_SHORT, 0);
+	gl.drawElements(gl.LINES, stuff.line_indecies.length, gl.UNSIGNED_SHORT, 0);
 	requestAnimationFrame(render); 
 }

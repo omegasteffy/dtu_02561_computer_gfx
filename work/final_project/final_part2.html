@@ -54,7 +54,7 @@
         return dot( n, vec3(70.0) );
         
     }
-
+        uniform float time;
 	    attribute vec4   a_Position;
         uniform mat4 trsMatrix;
         uniform mat4 proj_Matrix;
@@ -64,7 +64,7 @@
 	    void main()
         {
             vec4  Pos=a_Position.xzyw;
-            Pos.y  =noise(a_Position.xy*6.0)*0.1    ;
+            Pos.y  =noise(vec2(a_Position.x*6.0,a_Position.y*6.0+time))*0.1    ;
             gl_Position = proj_Matrix * camera_Matrix * trsMatrix * Pos;
             v_color.rg = a_Position.xy;
 	    }
@@ -85,7 +85,7 @@
     <script src="../angel_common/webgl-utils.js"></script>
     <script src="../angel_common/MV.js"></script>
     <script src="../other_common/helpers.js"></script>
-    <script src="final_part1.js"></script>
+    <script src="final_part2.js"></script>
 </body>
 
 </html>
