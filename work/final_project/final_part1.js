@@ -95,22 +95,25 @@ function plane_3d(gl,no_rows,no_columns)
 				x.line_indecies[idx_lines++] = b+no_columns;
 				x.line_indecies[idx_lines++] = b;
 
-				// b+1 
-				// |
-				// b+1+row
-				x.line_indecies[idx_lines++] = b+1;
-				x.line_indecies[idx_lines++] = b+no_columns+1;
-				
-				// b+row  <-- b+1+row
-				x.line_indecies[idx_lines++] = b+no_columns+1;
-				x.line_indecies[idx_lines++] = b+no_columns;
-				//   b+1
-				//  /
-				// b+row
-				x.line_indecies[idx_lines++] = b+no_columns;
-				x.line_indecies[idx_lines++] = b+1;
+				const last_col = ( r == no_rows-2);
+				if(last_col)
+				{	
+					// b+row  <-- b+1+row
+					x.line_indecies[idx_lines++] = b+no_columns+1;
+					x.line_indecies[idx_lines++] = b+no_columns;
+				}
+				const last_in_row = (c == no_columns-2);
+				if(last_in_row)
+				{
+					// b+1 
+					// |
+					// b+1+row
+					x.line_indecies[idx_lines++] = b+1;
+					x.line_indecies[idx_lines++] = b+no_columns+1;
+				}
 
 			}
+
 
 		}
 	}
@@ -154,23 +157,35 @@ function setup_stuff()
 
 	gl.clear(gl.COLOR_BUFFER_BIT );
 
-	stuff = plane_3d(gl,2,3);
+	stuff = plane_3d(gl,5,6);
 	rectSpec = rectangle(gl);
 	send_floats_to_attribute_buffer("a_Position", stuff.points, 2, gl, program);
 
-	 //gl.drawArrays(gl.LINE_STRIP, 0,6);
-	//return;
-	// Create an empty buffer object to store Index buffer
-	let index_buffer = gl.createBuffer();
+	//  //gl.drawArrays(gl.LINE_STRIP, 0,6);
+	// //return;
+	// // Create an empty buffer object to store Index buffer
+	// let index_buffer = gl.createBuffer();
+
+	// //// Bind appropriate array buffer to it
+	// gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+
+	// //// Pass the vertex data to the buffer
+	// gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, stuff.indecies, gl.STATIC_DRAW);
+
+	// //// Draw the triangle
+	// gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_SHORT, 0);
+
+	send_floats_to_attribute_buffer("a_Position", stuff.points, 2, gl, program);
+	let index_buffer2 = gl.createBuffer();
 
 	//// Bind appropriate array buffer to it
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer2);
 
 	//// Pass the vertex data to the buffer
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, stuff.indecies, gl.STATIC_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, stuff.line_indecies, gl.STATIC_DRAW);
 
 	//// Draw the triangle
-	gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_SHORT, 0);
+	gl.drawElements(gl.LINES, stuff.line_indecies.length, gl.UNSIGNED_SHORT, 0);
 
 //	gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectSpec.drawCount);
 //	render(); // no need for since we only have a static image
