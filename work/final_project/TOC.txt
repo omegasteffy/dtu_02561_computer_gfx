@@ -1,11 +1,33 @@
 Abstract
+	 --== Proceedurally generated landscape ==--
+	The report aim to generate a landscape from pseudo-random functions (and fractals) in WebGL
+	A simple 2D noise function is used as a height map. To simulate texture a similar noise function is sampled.
+	Finally a set of fractal tree are drawn as lines.
+
 Context/usage
+	In some situations it can be difficult and time comsuming to generate textures and landscapes for 3D scenes.
+	Proceedural functions can e.g. be used to mimic the texture of a marble vase or a height map to use as terrain for a computer game.
+	The same result could be obtained with photos or manual editing. However with a few adjustment you can generate new variations of such texture, without the need new photos.
+	Furthermore the proceedural methods requires very little space compared to a texture (even compressed).
+	The size aspect also make the prodeedural methods to be used in size-restricted demostrations (the 4 & 64k intro of the demoscene), although this admittedly is a sub-genre.
+	
 Show noise function
-Setup
+	To generate some kind of beliveable terrain we can not just completely white noise
+	IMAGE WHITE NOISE
+	We need a more smooth (i.e. low-frequent) waves + perhabs a bit of random details with less amplitude.
+	This would suggest the use of pink or brown noise, which by definition decrease the PSD with respectively 3 dB and 6dB/decade.
+	A common way to a similar effect is to add a low amplitude noise function to one or more downsampled noise functions with less amplitude.
+	
+	There also exist noise functions developed/tweaked specifically to be used as noise for graphics (link Ken Perlin) 
+
+Setting up the scene/block diagram / overview
+	
   2D-grid 
+	The first step is simply to setup some kind of 2D-grid.	
   Vertex shader: Calculate height
+	The calculation of the 
   Fragment shader calculate lightning + apply texture
 
-Implementation
+Implementation details
 Details + Fine funing
 Conclussion / further improvement
