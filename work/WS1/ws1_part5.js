@@ -1,7 +1,8 @@
 let gl;
 let program;
 let uniforms;
-let rectSpec;
+let circle;
+let y_offset = 0.1;
 
 function setup_stuff() 
 {
@@ -15,21 +16,24 @@ function setup_stuff()
 	gl.useProgram(program);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
-
-	rectSpec = rectangle_2d(gl);
-	send_floats_to_attribute_buffer("a_Position",rectSpec.vertices,rectSpec.perDrawing,gl,program);
-	requestAnimationFrame(render); 
+	setup_circle();
+	document.getElementById("subdivision_slider").onchange = setup_circle;
+	requestAnimationFrame(render);
 }
-var y_offset = 0.1;
-
+function setup_circle()
+{
+	let num_stops_on_circle = document.getElementById("subdivision_slider").value;
+	circle = circle_2d(gl,num_stops_on_circle);
+	send_floats_to_attribute_buffer("a_Position",circle.vertices,circle.perDrawing,gl,program);
+}
 
 function render()
 {
 	gl.uniform1f(uniforms.y_offset, y_offset);
 	y_offset += 0.1;
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	gl.drawArrays(rectSpec.drawtype, 0, rectSpec.drawCount);
+	gl.drawArrays(circle.drawtype, 0, circle.drawCount);
 	requestAnimationFrame(render); 
 }
 
-setup_stuff();
+setup_stuff(); // start
