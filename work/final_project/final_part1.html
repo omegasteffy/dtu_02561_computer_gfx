@@ -1,7 +1,29 @@
 ﻿<html>
 	<title>Final Project</title>
 
+    <script id="simple_vert" type="x-shader/x-vertex" >
+	    attribute vec4   a_Position;
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_Matrix;
+        uniform mat4 camera_Matrix;
+        varying  vec4 v_color;
+	    void main()
+        {
 
+            gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
+            v_color.rg = a_Position.xy;
+	    }
+    </script>
+    <script id="simple_frag" type="x-shader/x-fragment" >
+	    precision mediump float;
+        varying  vec4 v_color;
+        
+	    void main()
+	    {
+            gl_FragColor = vec4(1.0,1.0,1.0,0.5);
+            gl_FragColor.rgb =v_color.rgb;
+	    }
+    </script>
     <script id="vert" type="x-shader/x-vertex" >
 	    attribute vec4   a_Position;
         uniform mat4 trsMatrix;
@@ -11,10 +33,7 @@
 	    void main()
         {
 
-           // gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
-            gl_Position.x =  a_Position.x*0.8;
-            gl_Position.y =  a_Position.y*0.8;
-            gl_Position.zw =  a_Position.zw;
+            gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position.xzyw;
             v_color.rg = a_Position.xy;
 	    }
     </script>
