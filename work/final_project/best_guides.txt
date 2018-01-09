@@ -1,2 +1,4 @@
 About landscape https://www.redblobgames.com/maps/terrain-from-noise/
 about perlin function http://flafla2.github.io/2014/08/09/perlinnoise.html
+
+js perlin noise https://gist.github.com/WouterVanmulken/d139b14f524318ddc14221d89312ce3c
