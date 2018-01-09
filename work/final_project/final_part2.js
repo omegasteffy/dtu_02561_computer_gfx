@@ -5,22 +5,6 @@ let uniforms;
 let stuff;
 let time;
 
-/**
- * Create coordinates for a rectangle
- */
-function rectangle(gl) {
-	var x = { "type": "rectangle" };
-	x.drawtype = gl.TRIANGLE_STRIP;
-	x.vertices = new Float32Array([
-		-4, -1, -1,
-		4, -1, -1,
-		-4, -1, -21,
-		4, -1, -21
-		]);
-	x.drawCount = 4;
-	return x;
-}
-
 function plane_3d(gl,no_rows,no_columns)
 {
 	if ( (no_rows<2) || (no_columns < 2) )
