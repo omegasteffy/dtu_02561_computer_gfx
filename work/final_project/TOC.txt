@@ -1,15 +1,16 @@
 Abstract
 	 --== Proceedurally generated landscape ==--
-	The report aim to generate a landscape from pseudo-random functions (and fractals) in WebGL
+	The report aim to generate a landscape from pseudo-random functions (and fractals) in WebGL.
 	A simple 2D noise function is used as a height map. To simulate texture a similar noise function is sampled.
 	Finally a set of fractal tree are drawn as lines.
 
 Context/usage
 	In some situations it can be difficult and time comsuming to generate textures and landscapes for 3D scenes.
 	Proceedural functions can e.g. be used to mimic the texture of a marble vase or a height map to use as terrain for a computer game.
-	The same result could be obtained with photos or manual editing. However with a few adjustment you can generate new variations of such texture, without the need new photos.
+	The same result could be obtained with photos or manual drawing. However with a few adjustment you can generate new variations of such texture, without the need new photos.
 	Furthermore the proceedural methods requires very little space compared to a texture (even compressed).
 	The size aspect also make the prodeedural methods to be used in size-restricted demostrations (the 4 & 64k intro of the demoscene), although this admittedly is a sub-genre.
+	It is worth mentioning the methods might require more cpu/gpu power to compute than a texture (but on the other hand the tranfer between CPU and GPU is often considered a the biggest bottleneck)
 	
 Show noise function
 	To generate some kind of beliveable terrain we can not just completely white noise
@@ -18,7 +19,21 @@ Show noise function
 	This would suggest the use of pink or brown noise, which by definition decrease the PSD with respectively 3 dB and 6dB/decade.
 	A common way to a similar effect is to add a low amplitude noise function to one or more downsampled noise functions with less amplitude.
 	
-	There also exist noise functions developed/tweaked specifically to be used as noise for graphics (link Ken Perlin) 
+	There also exist noise functions developed/tweaked specifically to be used as noise for graphics (link Ken Perlin)
+	The most famous are Perlin noise and Simplex Noise.
+	It is outside the scope of this report to explain these in further detail (there is great risk of getting the explanation wrong).
+
+	For this report we will suffiece with a simpler function looking approxiamately like Perlin noise, and more less threat it as a black box.
+	These noise functions are not truly random, but instead use a hash funtion to produce pseudo random values.
+	The seeming random numbers can e.g. be obtained by multiplying the input coordinates with a floating point number and taking the fraction.
+
+
+ ... Desireable proberties
+	smooth (dominated to low frequency changes)
+	free from artifacts.
+	gradient available as part of computation (to use for lighting)
+	fast to compute
+	parralizable (offload to GPU/shader code)
 
 Setting up the scene/block diagram / overview
 	
