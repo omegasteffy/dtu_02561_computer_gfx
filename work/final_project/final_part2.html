@@ -64,8 +64,14 @@
 	    void main()
         {
             vec4  Pos=a_Position.xzyw;
-            Pos.y  =noise(vec2(a_Position.x*6.0,a_Position.y*6.0+time))*0.1    ;
-            gl_Position = proj_Matrix * camera_Matrix * trsMatrix * Pos;
+            vec2  Pos2D = a_Position.xz;
+            float noise_res = 0.5*noise(vec2(a_Position.x,a_Position.y+time)) ;
+                 noise_res +=0.25*noise(vec2(a_Position.x*2.0,a_Position.y*2.0+time)) ;
+                 noise_res +=0.125*noise(vec2(a_Position.x*4.0,a_Position.y*4.0+time)) ;
+                noise_res += 0.5*0.125*noise(vec2(a_Position.x*8.0,a_Position.y*8.0+time)) ;
+          //  Pos.y  = pow(noise_res,2.0);
+            Pos.y  = .8*noise_res;
+            gl_Position = proj_Matrix * camera_Matrix * trsMatrix *Pos;
             v_color.rg = a_Position.xy;
 	    }
     </script>
