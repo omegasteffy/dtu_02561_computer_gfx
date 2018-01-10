@@ -7,6 +7,7 @@ let freqScales;
 let lightOffset;
 let lineSpec;
 let plane;
+let index_buffer;
 let time;
 function generate_line()
 {
@@ -27,7 +28,7 @@ function init()
 	console.trace("Started");	
 	const canvas = document.getElementById('draw_area');
 	gl = WebGLUtils.setupWebGL(canvas, { alpha: false });
-
+	index_buffer = gl.createBuffer();
 	program = initShaders(gl, "vert", "frag");
 	gl.useProgram(program);
 	uniforms=cacheUniformLocations(gl, program);
@@ -79,7 +80,7 @@ function render()
 	gl.uniform4fv(uniforms.noise_frq_scale,freqScales);
 	send_floats_to_attribute_buffer("a_Position", plane.points, 2, gl, program);
 
-	let index_buffer = gl.createBuffer();
+
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, plane.indecies, gl.STATIC_DRAW);
 	gl.drawElements(gl.TRIANGLES, plane.indecies.length, gl.UNSIGNED_SHORT, 0);
