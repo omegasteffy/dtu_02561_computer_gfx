@@ -6,6 +6,8 @@ let stuff;
 let freqScales;
 let lightOffset;
 let lineSpec;
+let plane;
+let time;
 function generate_line()
 {
 	let x={};
@@ -33,12 +35,15 @@ function init()
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	freqScales = new Float32Array(4);
 	lineSpec = generate_line();
+	plane = plane_3d(gl,100,100);
+	time = 0;
 	document.getElementById("frq1_slider").onchange = setup_stuff;
 	document.getElementById("frq2_slider").onchange = setup_stuff;
 	document.getElementById("frq3_slider").onchange = setup_stuff;
 	document.getElementById("frq4_slider").onchange = setup_stuff;
 	document.getElementById("light_offset_slider").onchange = setup_stuff;
 	setup_stuff();
+	render();
 }
 function setup_stuff()
 {
@@ -52,11 +57,24 @@ function setup_stuff()
 
 	gl.clear(gl.COLOR_BUFFER_BIT );
 	gl.useProgram(program);
-	trsMatrix=mult(translate(-1,0,0), scalem(2.0,1.0,1));
+	
+}
+
+
+
+function render()
+{	
+	let do_scroll = document.getElementById("enable_scroll").checked;
+	if(do_scroll)
+	{
+		time=time+.01;
+	}
+	let trsMatrix=mult(translate(-1,0,0), scalem(2.0,1.0,1));
 	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
 
+	gl.uniform1f(uniforms.time, time);
 	gl.uniform1i(uniforms.is_a_line, false);
-	plane = plane_3d(gl,100,100);
+
 	gl.uniform1f(uniforms.light_offset, lightOffset);
 	gl.uniform4fv(uniforms.noise_frq_scale,freqScales);
 	send_floats_to_attribute_buffer("a_Position", plane.points, 2, gl, program);
@@ -73,16 +91,5 @@ function setup_stuff()
 	
 	send_floats_to_attribute_buffer("a_Position", lineSpec.linepoints, 1, gl, program);
 	gl.drawArrays(gl.LINE_STRIP, 0, lineSpec.NUM_STEP);
-//	render(); // no need for since we only have a static image
-}
-
-
-
-function render()
-{	
-
-	gl.clear(gl.COLOR_BUFFER_BIT);
-//	gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectSpec.drawCount);
-gl.drawElements(gl.TRIANGLES, stuff.indecies.length/3, gl.UNSIGNED_SHORT, 0);
 	requestAnimationFrame(render); 
 }

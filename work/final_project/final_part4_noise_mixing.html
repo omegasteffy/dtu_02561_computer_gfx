@@ -39,18 +39,19 @@
         varying  float v_height;
         uniform vec4 noise_frq_scale;
         uniform bool is_a_line;
+        uniform float time;
         
 	    void main()
         {
             float freq1= 1.0;
             float frequencyScale=2.0;
             vec4  Pos=a_Position;
-            gl_Position = trsMatrix * Pos;
-
-            float noise_mix = noise_frq_scale.x*noise( a_Position.xy *freq1* 1.0 );
-            noise_mix += noise_frq_scale.y*noise( a_Position.xy *freq1* 2.0 );
-            noise_mix += noise_frq_scale.z*noise( a_Position.xy *freq1* 4.0 );
-            noise_mix += noise_frq_scale.w*noise( a_Position.xy * freq1*8.0);
+            gl_Position = trsMatrix *a_Position;
+            Pos.y += time;
+            float noise_mix = noise_frq_scale.x*noise( Pos.xy *freq1* 1.0 );
+            noise_mix += noise_frq_scale.y*noise( Pos.xy *freq1* 2.0 );
+            noise_mix += noise_frq_scale.z*noise( Pos.xy *freq1* 4.0 );
+            noise_mix += noise_frq_scale.w*noise( Pos.xy * freq1*8.0);
             if(!is_a_line)
             {
                 v_height=noise_mix;
@@ -87,6 +88,10 @@
             and inspecting the summed waveform.
         </div>
         <table>
+                <tr>
+                        <td>Enabled scrolling</td>
+                        <td><input type="checkbox" id="enable_scroll"></td>
+                    </tr>
                     <tr>
                         <td>Frq1</td>
                         <td><input type="range" min="0" max="50" id="frq1_slider"></td>
