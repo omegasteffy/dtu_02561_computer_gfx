@@ -1,0 +1,122 @@
+﻿<html>
+	<title>Final Project</title>
+
+    <script id="simple_vert" type="x-shader/x-vertex" >
+	    attribute vec4   a_Position;
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_Matrix;
+        uniform mat4 camera_Matrix;
+        varying  vec4 v_color;
+	    void main()
+        {
+
+            gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
+            v_color.rg = a_Position.xy;
+	    }
+    </script>
+    <script id="simple_frag" type="x-shader/x-fragment" >
+	    precision mediump float;
+        varying  vec4 v_color;
+        
+	    void main()
+	    {
+            gl_FragColor = vec4(1.0,1.0,1.0,0.5);
+            gl_FragColor.rgb =v_color.rgb;
+	    }
+    </script>
+    <script id="vert" type="x-shader/x-vertex" >
+
+        //The hash and noise function is taken from https://www.shadertoy.com/view/Msf3WH
+    vec2 hash( vec2 p ) // replace this by something better
+    {
+        p = vec2( dot(p,vec2(127.1,311.7)),
+                dot(p,vec2(269.5,183.3)) );
+
+        return -1.0 + 2.0*fract(sin(p)*43758.5453123);
+    }
+
+    float noise( in vec2 p )
+    {
+        const float K1 = 0.366025404; // (sqrt(3)-1)/2;
+        const float K2 = 0.211324865; // (3-sqrt(3))/6;
+
+        vec2 i = floor( p + (p.x+p.y)*K1 );
+        
+        vec2 a = p - i + (i.x+i.y)*K2;
+        vec2 o = step(a.yx,a.xy);    
+        vec2 b = a - o + K2;
+        vec2 c = a - 1.0 + 2.0*K2;
+
+        vec3 h = max( 0.5-vec3(dot(a,a), dot(b,b), dot(c,c) ), 0.0 );
+
+        vec3 n = h*h*h*h*vec3( dot(a,hash(i+0.0)), dot(b,hash(i+o)), dot(c,hash(i+1.0)));
+
+        return dot( n, vec3(70.0) );
+        
+    }
+    float noise_sum(in vec2 a_Position,in float time)
+    {
+        float noise_res  = 0.5*noise(vec2(a_Position.x,a_Position.y+time)) ;
+        noise_res       += 0.25*noise(vec2(a_Position.x*2.0,a_Position.y*2.0+time)) ;
+        noise_res       += 0.125*noise(vec2(a_Position.x*4.0,a_Position.y*4.0+time)) ;
+        noise_res       += .5*0.125*noise(vec2(a_Position.x*8.0,a_Position.y*8.0+time)) ;
+        return noise_res;
+    }
+
+    float noise_and_normal(in vec2 pos,in float time,in float gradient_step,out vec3 normal)
+    {
+        vec3 p0,p1,p2;
+        p0.xy = pos;
+        p0.z  = noise_sum(pos,time);
+        p1.xy = vec2(pos.x + gradient_step  ,  pos.y);
+        p1.z=noise_sum( p1.xy,time );
+        p2.xy = vec2(pos.x   ,  pos.y + gradient_step);
+        p2.z = noise_sum( p2.xy ,time);
+        vec3 v1 =p1-p0;
+        vec3 v2 =p2-p0;
+        normal = cross(v1,v2);
+        normal.z=0.0;
+        return p0.z;
+    }
+        uniform float time;
+	    attribute vec4   a_Position;
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_Matrix;
+        uniform mat4 camera_Matrix;
+        varying  vec4 v_color;
+        varying  vec3 v_normal;
+        
+	    void main()
+        {
+            vec4  Pos=a_Position.xzyw;
+            vec2  Pos2D = a_Position.xz;
+          //  float noise_res = noise_sum(a_Position.xy,time);
+          float noise_res = noise_and_normal(a_Position.xy,time,0.001,v_normal);
+          //  Pos.y  = pow(noise_res,2.0);
+            Pos.y  = .8*noise_res;
+            gl_Position = proj_Matrix * camera_Matrix * trsMatrix *Pos;
+            v_color.rg = vec2(1.0,1.0);//a_Position.xy;
+	    }
+    </script>
+    <script id="frag" type="x-shader/x-fragment" >
+	    precision mediump float;
+        varying  vec4 v_color;
+        varying  vec3 v_normal;
+        
+	    void main()
+	    {
+            gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+             gl_FragColor.rgb =vec3(0.5,0.5,0.5)+normalize(v_normal.rgb);
+	    }
+    </script>
+<body>
+	<canvas id='draw_area' height="512" width="512" />
+    <script src="../angel_common/initShaders.js"></script>
+    <script src="../angel_common/webgl-utils.js"></script>
+    <script src="../angel_common/MV.js"></script>
+    <script src="../other_common/helpers.js"></script>
+    <script src="plane3d.js"></script>
+    <script src="final_part5_normalcalc_validation.js"></script>
+</body>
+
+</html>
