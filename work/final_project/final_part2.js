@@ -21,10 +21,10 @@ function setup_stuff()
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
-	let eyePos = vec3(1.5,.3,-0.6); // this is apparently what is meant by default
+	let eyePos = vec3(1.5,.6,-0.6); // this is apparently what is meant by default
 	
 	let upVec = vec3(0.0, 1.0, 0.0);//we just need the orientation... it will adjust itself
-	let cameraTarget = vec3(1.5, 0.3, 0.0);// for isometric we should look at origo
+	let cameraTarget = vec3(1.5, 0.5, 0.0);// for isometric we should look at origo
 
 	let cameraMatrix = lookAt(eyePos, cameraTarget, upVec);
 
