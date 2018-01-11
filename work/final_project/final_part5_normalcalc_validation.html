@@ -59,24 +59,26 @@
         float noise_res  = 0.5*noise(vec2(a_Position.x,a_Position.y+time)) ;
         noise_res       += 0.25*noise(vec2(a_Position.x*2.0,a_Position.y*2.0+time)) ;
         noise_res       += 0.125*noise(vec2(a_Position.x*4.0,a_Position.y*4.0+time)) ;
-        noise_res       += .5*0.125*noise(vec2(a_Position.x*8.0,a_Position.y*8.0+time)) ;
+        noise_res       += 0.5*0.125*noise(vec2(a_Position.x*8.0,a_Position.y*8.0+time)) ;
         return noise_res;
     }
 
     float noise_and_normal(in vec2 pos,in float time,in float gradient_step,out vec3 normal)
     {
         vec3 p0,p1,p2;
-        p0.xy = pos;
-        p0.z  = noise_sum(pos,time);
-        p1.xy = vec2(pos.x + gradient_step  ,  pos.y);
-        p1.z=noise_sum( p1.xy,time );
-        p2.xy = vec2(pos.x   ,  pos.y + gradient_step);
-        p2.z = noise_sum( p2.xy ,time);
-        vec3 v1 =p1-p0;
-        vec3 v2 =p2-p0;
+        p0.xz = pos;
+        p1.xz = vec2(pos.x + gradient_step  ,  pos.y);  //a step in x-dir                 ..increase => normal.x increase /red
+        p2.xz = vec2(pos.x   ,  pos.y + gradient_step); //a step in y-dir (z-world-coord) ..increase => normal.z increase /blue
+
+        p0.y  = noise_sum( p0.xz , time );
+        p1.y  = noise_sum( p1.xz , time );
+        p2.y  = noise_sum( p2.xz , time );
+
+        vec3 v1 = p1-p0;
+        vec3 v2 = p2-p0;
         normal = cross(v1,v2);
-        normal.z=0.0;
-        return p0.z;
+       
+        return p0.y;
     }
         uniform float time;
 	    attribute vec4   a_Position;
@@ -90,12 +92,9 @@
         {
             vec4  Pos=a_Position.xzyw;
             vec2  Pos2D = a_Position.xz;
-          //  float noise_res = noise_sum(a_Position.xy,time);
-          float noise_res = noise_and_normal(a_Position.xy,time,0.001,v_normal);
-          //  Pos.y  = pow(noise_res,2.0);
-            Pos.y  = .8*noise_res;
+            float noise_res = noise_and_normal(a_Position.xy,time,0.02,v_normal);
+            Pos.y  = .8*noise_res; //Apply noise sample as height
             gl_Position = proj_Matrix * camera_Matrix * trsMatrix *Pos;
-            v_color.rg = vec2(1.0,1.0);//a_Position.xy;
 	    }
     </script>
     <script id="frag" type="x-shader/x-fragment" >
@@ -106,10 +105,14 @@
 	    void main()
 	    {
             gl_FragColor = vec4(1.0,0.0,0.0,1.0);
-             gl_FragColor.rgb =vec3(0.5,0.5,0.5)+normalize(v_normal.rgb);
+             gl_FragColor.rgb =vec3(.5,.5,.5)+normalize(v_normal.rgb);
 	    }
     </script>
 <body>
+    <tr>
+            <td>Enabled scrolling</td>
+            <td><input type="checkbox" id="enable_scroll"></td>
+    </tr>
 	<canvas id='draw_area' height="512" width="512" />
     <script src="../angel_common/initShaders.js"></script>
     <script src="../angel_common/webgl-utils.js"></script>
