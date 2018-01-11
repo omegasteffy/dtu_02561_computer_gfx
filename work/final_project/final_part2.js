@@ -5,104 +5,6 @@ let uniforms;
 let stuff;
 let time;
 
-function plane_3d(gl,no_rows,no_columns)
-{
-	if ( (no_rows<2) || (no_columns < 2) )
-	{
-		throw ("Plane must have at least 2x2 points");
-	}
-	let x = {};
-
-	//fill out points
-	const row_step = 1/(no_rows-1);
-	const col_step = 1/(no_columns-1);
-	x.points = new Float32Array(no_rows*no_columns*2);
-	x.points2 = new Array();
-	{	
-		let idx=0;
-		for(let r = 0; r <  no_rows; r++)
-		{
-			const row_index_offset = r * no_columns;
-			for(let c = 0; c < no_columns; c++)
-			{
-				x.points2[row_index_offset+c] = vec2(c*col_step,r*row_step);
-				x.points[idx++]= c*col_step;
-				x.points[idx++]= r*row_step;
-
-			}
-		}
-	}
-	x.countTriangles = (no_rows -1) * (no_columns-1) * 2 ; //two triangles per square
-	x.indecies = new Uint16Array(3*x.countTriangles);
-	x.line_indecies = new Uint16Array(6*x.countTriangles);
-	x.indecies2 = new Array();
-
-	{
-		let idx=0;
-		let idx_lines=0;
-		for ( let r=0; r < (no_rows-1) ; r++ )
-		{
-			const row_index_offset = r * no_columns;
-			for(let c=0 ; c < (no_columns-1); c++)
-			{
-				const b =row_index_offset+c ;
-				x.indecies2.push (vec3( b , b+1 , b+no_columns ));
-				
-				// b---b+1
-				// |  /
-				// |/b+row
-				x.indecies[idx++] = b;
-				x.indecies[idx++] = b+1;
-				x.indecies[idx++] = b+no_columns;
-				
-				// b+1     / |
-				//        /  |
-				// b+row /---| b+row +1 
-				x.indecies2.push (vec3( b+1 , b+no_columns+1 , b+no_columns ));
-				x.indecies[idx++] = b+1;
-				x.indecies[idx++] = b+no_columns;
-				x.indecies[idx++] = b+no_columns+1;
-
-				// b --> b+1
-				x.line_indecies[idx_lines++] = b;
-				x.line_indecies[idx_lines++] = b+1
-				
-				//    b+1
-				//  /
-				// b+row
-				x.line_indecies[idx_lines++] = b+1;
-				x.line_indecies[idx_lines++] = b+no_columns;
-				// b1
-				// |
-				// b+row
-				x.line_indecies[idx_lines++] = b+no_columns;
-				x.line_indecies[idx_lines++] = b;
-
-				const last_col = ( r == no_rows-2);
-				if(last_col)
-				{	
-					// b+row  <-- b+1+row
-					x.line_indecies[idx_lines++] = b+no_columns+1;
-					x.line_indecies[idx_lines++] = b+no_columns;
-				}
-				const last_in_row = (c == no_columns-2);
-				if(last_in_row)
-				{
-					// b+1 
-					// |
-					// b+1+row
-					x.line_indecies[idx_lines++] = b+1;
-					x.line_indecies[idx_lines++] = b+no_columns+1;
-				}
-
-			}
-
-
-		}
-	}
-	return x;
-}
-
 setup_stuff();
 
 function setup_stuff()
@@ -119,10 +21,10 @@ function setup_stuff()
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
-	let eyePos = vec3(1.5,.3,-0.6); // this is apparently what is meant by default
+	let eyePos = vec3(1.5,.6,-0.6); // this is apparently what is meant by default
 	
 	let upVec = vec3(0.0, 1.0, 0.0);//we just need the orientation... it will adjust itself
-	let cameraTarget = vec3(1.5, 0.3, 0.0);// for isometric we should look at origo
+	let cameraTarget = vec3(1.5, 0.5, 0.0);// for isometric we should look at origo
 
 	let cameraMatrix = lookAt(eyePos, cameraTarget, upVec);
 
@@ -189,7 +91,7 @@ render(); // no need for since we only have a static image
 
 function render()
 {	
-	time=time+.1;
+	time=time+.03;
 	gl.uniform1f(uniforms.time,time);
 	gl.clear(gl.COLOR_BUFFER_BIT);
 //	gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectSpec.drawCount);
