@@ -54,12 +54,12 @@
         return dot( n, vec3(70.0) );
         
     }
-    float noise_sum(in vec2 a_Position,in float time)
+    float noise_sum(in vec2 coord,in float time)
     {
-        float noise_res  = 0.5*noise(vec2(a_Position.x,a_Position.y+time)) ;
-        noise_res       += 0.25*noise(vec2(a_Position.x*2.0,a_Position.y*2.0+time)) ;
-        noise_res       += 0.125*noise(vec2(a_Position.x*4.0,a_Position.y*4.0+time)) ;
-        noise_res       += 0.5*0.125*noise(vec2(a_Position.x*8.0,a_Position.y*8.0+time)) ;
+        float noise_res  = 0.5*noise(vec2(coord.x,coord.y+time)) ;
+        noise_res       += 0.25*noise(vec2(coord.x*2.0,coord.y*2.0+time)) ;
+        noise_res       += 0.125*noise(vec2(coord.x*4.0,coord.y*4.0+time)) ;
+        noise_res       += 0.5*0.125*noise(vec2(coord.x*8.0,coord.y*8.0+time)) ;
         return noise_res;
     }
 
