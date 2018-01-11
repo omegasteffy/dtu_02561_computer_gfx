@@ -57,9 +57,9 @@
     float noise_sum(in vec2 coord,in float time)
     {
         float noise_res  = 0.5*noise(vec2(coord.x,coord.y+time)) ;
-        noise_res       += 0.25*noise(vec2(coord.x*2.0,coord.y*2.0+time)) ;
-        noise_res       += 0.125*noise(vec2(coord.x*4.0,coord.y*4.0+time)) ;
-        noise_res       += 0.5*0.125*noise(vec2(coord.x*8.0,coord.y*8.0+time)) ;
+        noise_res       += 0.25*noise(vec2(coord.x*2.0,(coord.y+time)*2.0)) ;
+        noise_res       += 0.125*noise(vec2(coord.x*4.0,(coord.y+time)*4.0)) ;
+        noise_res       += .5*0.125*noise(vec2(coord.x*8.0,(coord.y+time)*8.0)) ;
         return noise_res;
     }
 
@@ -92,7 +92,7 @@
         {
             vec4  Pos=a_Position.xzyw;
             vec2  Pos2D = a_Position.xz;
-            float noise_res = noise_and_normal(a_Position.xy,time,0.02,v_normal);
+            float noise_res = noise_and_normal(a_Position.xy,time,0.05,v_normal);
             Pos.y  = .8*noise_res; //Apply noise sample as height
             gl_Position = proj_Matrix * camera_Matrix * trsMatrix *Pos;
 	    }

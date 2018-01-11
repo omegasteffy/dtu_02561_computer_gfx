@@ -95,7 +95,7 @@ function render()
 	let do_scroll = document.getElementById("enable_scroll").checked;
 	if(do_scroll)
 	{
-		time=time+.02;
+		time=time+.017;
 	}
 	gl.uniform1f(uniforms.time,time);
 	gl.clear(gl.COLOR_BUFFER_BIT);

@@ -91,7 +91,7 @@ render(); // no need for since we only have a static image
 
 function render()
 {	
-	time=time+.03;
+	time=time+.01;
 	gl.uniform1f(uniforms.time,time);
 	gl.clear(gl.COLOR_BUFFER_BIT);
 //	gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectSpec.drawCount);
