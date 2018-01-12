@@ -2,7 +2,6 @@ console.trace("Started");
 let canvas;
 let gl;
 let program;
-let initial_points;
 let shapes_finished_list= Array();
 let shape_being_drawn={};
 let current_drawmode='';
@@ -101,7 +100,7 @@ function init_stuff()
 
 
 
-	shape_being_drawn = new Shape(shapes_finished_list);
+	shape_being_drawn = new ShapePreliminary(shapes_finished_list);
 	set_draw_mode("point");
 	document.getElementById("clear_button").onclick = handleClearButton;
 	document.getElementById("drawmode_select").onchange = handleChangedDrawMode
