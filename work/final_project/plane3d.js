@@ -45,8 +45,8 @@ function plane_3d(gl,no_rows,no_columns)
 				// b---b+1
 				// |  /
 				// |/b+row
+				x.indecies[idx++] = b + 1
 				x.indecies[idx++] = b;
-				x.indecies[idx++] = b+1;
 				x.indecies[idx++] = b+no_columns;
 				
 				// b+1     / |
