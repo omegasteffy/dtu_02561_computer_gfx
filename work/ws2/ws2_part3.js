@@ -99,7 +99,11 @@ function render() {
 }
 function handleClearButton()
 {
-	extra_objects=[];//i was unable to find a clear method
+	while( shapes_finished_list.length>0)
+	{
+		shapes_finished_list.pop(); // did not find a clear method
+	}
+	shape_being_drawn.clear();
 }
 function getSelectedColor()
 {
