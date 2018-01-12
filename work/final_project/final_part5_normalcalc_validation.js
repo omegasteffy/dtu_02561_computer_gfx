@@ -3,8 +3,7 @@ let gl;
 let program;
 let uniforms;
 let stuff;
-
-
+let time;
 
 setup_stuff();
 
@@ -22,10 +21,10 @@ function setup_stuff()
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
-	let eyePos = vec3(.5,.3,-0.6); // this is apparently what is meant by default
+	let eyePos = vec3(1.5,.6,-1.3); // this is apparently what is meant by default
 	
 	let upVec = vec3(0.0, 1.0, 0.0);//we just need the orientation... it will adjust itself
-	let cameraTarget = vec3(0.5, 0.3, 0.0);// for isometric we should look at origo
+	let cameraTarget = vec3(1.5, 0.5, 0.0);// for isometric we should look at origo
 
 	let cameraMatrix = lookAt(eyePos, cameraTarget, upVec);
 
@@ -49,12 +48,12 @@ function setup_stuff()
 	send_array_to_attribute_buffer("a_Position", coord.points, 3, gl, program);
 	gl.drawArrays(gl.LINES, 0, coord.drawCount);
 	gl.useProgram(program);
-	trsMatrix=scalem(1.0,1.0,5);
+	trsMatrix=scalem(3.0,1.0,5);
 	gl.uniformMatrix4fv(uniforms.proj_Matrix, false, flatten(perMatrix));
 	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(cameraMatrix));
 	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
 
-	stuff = plane_3d(gl,50,10);
+	stuff = plane_3d(gl,50,30);
 	send_floats_to_attribute_buffer("a_Position", stuff.points, 2, gl, program);
 
 	//  //gl.drawArrays(gl.LINE_STRIP, 0,6);
@@ -84,15 +83,23 @@ function setup_stuff()
 	gl.drawElements(gl.LINES, stuff.line_indecies.length, gl.UNSIGNED_SHORT, 0);
 
 //	gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectSpec.drawCount);
-//	render(); // no need for since we only have a static image
+	time=0.0;
+render(); // no need for since we only have a static image
+
 }
 
 
 function render()
 {	
 
+	let do_scroll = document.getElementById("enable_scroll").checked;
+	if(do_scroll)
+	{
+		time=time+.017;
+	}
+	gl.uniform1f(uniforms.time,time);
 	gl.clear(gl.COLOR_BUFFER_BIT);
 //	gl.drawArrays(gl.TRIANGLE_STRIP, 0, rectSpec.drawCount);
-gl.drawElements(gl.TRIANGLES, stuff.indecies.length/3, gl.UNSIGNED_SHORT, 0);
+	gl.drawElements(gl.LINES, stuff.line_indecies.length, gl.UNSIGNED_SHORT, 0);
 	requestAnimationFrame(render); 
 }
