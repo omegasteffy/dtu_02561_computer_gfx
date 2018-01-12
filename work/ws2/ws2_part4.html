@@ -1,0 +1,64 @@
+<html>
+	<title>Worksheet 2 - Part 2</title>
+
+
+    <script id="vert" type="x-shader/x-vertex" >
+	    attribute vec4 a_Position;
+        attribute vec4 a_Color;
+        varying vec4 v_color;
+	    void main()
+	    {
+		    gl_PointSize = 20.0;
+		    gl_Position = a_Position;
+            v_color = a_Color;
+	    }
+    </script>
+    <script id="frag" type="x-shader/x-fragment" >
+	    precision mediump float;
+        varying vec4 v_color;
+	    void main()
+	    {
+		    gl_FragColor = v_color;
+	    }
+    </script>
+<body>
+	<canvas id='draw_area' height="512" width="512" >
+    </canvas><br/>
+    <table>
+        <div><b>Drawing mode</b></div>
+        <select id="drawmode_select">
+            <option value="point">Points</option>
+            <option value="triangle">Triangle</option>
+            <option value="circle">Circle</option>
+        </select>        
+        <table>
+            <tr>
+                <td>Current mode:</td><td id="draw_mode_indicator"></td>
+            </tr>
+        
+           <tr><td>Select color:</td><td>
+        <select id="colorselect">
+            <option value="red">Red</option>
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+            <option value="yellow">Yellow</option>
+            <option value="pink">Pink</option>
+            <option value="magenta">Magenta</option>
+            <option value="orange">Orange</option>
+            <option value="lime">Lime</option>
+            <option value="brown">Brown</option>
+            <option value="light_blue_clearing_color">Background</option>
+          </select> 
+        </td>
+    </table><br>
+    <button type="submit" id="clear_button">Clear drawing</button>
+    <script src="../angel_common/initShaders.js"></script>
+    <script src="../angel_common/webgl-utils.js"></script>
+    <script src="../angel_common/MV.js"></script>
+    <script src="../other_common/helpers.js"></script>
+    <script src="ws2_part4.js"></script>
+
+
+</body>
+
+</html>
