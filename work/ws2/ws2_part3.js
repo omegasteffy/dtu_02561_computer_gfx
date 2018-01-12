@@ -16,8 +16,16 @@ let shape_point = function(point,color)
 	this.shapeType = 'point';
 	this.drawType = gl.POINTS;
 }
+let shape_triangle = function(point,color)
+{
+	this.points = flatten(point);
+	this.colors = flatten(color);
+	this.drawCount = 3;
+	this.shapeType = 'triangle';
+	this.drawType = gl.TRIANGLES;
+}
  
-var Shape = function(dest){
+var ShapePreliminary = function(dest){
 	this.points = []
 	this.colors = [];
 	this.drawCount = 0;
@@ -27,54 +35,76 @@ var Shape = function(dest){
 	return this;
  }
   
- Shape.prototype.hasPoints = function ()
+ ShapePreliminary.prototype.hasPoints = function ()
  {
 	return this.drawCount > 0;
  }
- Shape.prototype.set_type = function (new_Shape)
+ ShapePreliminary.prototype.set_type = function (new_Shape)
  {
 	if (this.shapeType != new_Shape)
 	{
-		this.shapeType=new_Shape;
+		this.shapeType = new_Shape;
 		this.clear();	
 	}
  }
 
- Shape.prototype.clear = function()
+ ShapePreliminary.prototype.clear = function()
  {
 	this.drawCount =0;
 	this.points = [];	 
 	this.colors = [];
  }
- Shape.prototype.add_point= function(point,color)
+ ShapePreliminary.prototype.add_point= function(point,color)
  {
 	 switch(this.shapeType)
 	 {
-		 case 'point': 
-		 this.destination_list.push( new shape_point(point,color));
-		 this.clear();
+		case 'point': 
+		 	//For points we can directly create a new object
+			this.destination_list.push( new shape_point(point,color));
+			this.clear();
+			break;
+
+		case 'triangle':
+		 	//for triangles we must already have two points before we have a complete shape
+			 this.points.push(point);
+			 this.colors.push(color);
+			 this.drawCount++;
+
+			if(this.drawCount==3)
+			{
+				this.destination_list.push( new shape_triangle(this.points,this.colors));
+				this.clear();
+			}
+			break;
+
+		default:
+				throw("unknown draw mode "+this.shapeType);
+
 	 }
  }
 
 function set_draw_mode(new_mode)
 {
 	document.getElementById("draw_mode_indicator").innerText = new_mode;
+	shape_being_drawn.set_type(new_mode);
 }
 function init_stuff()
 {
 	canvas = document.getElementById('draw_area');
 	gl = WebGLUtils.setupWebGL(canvas);
-	set_draw_mode("Points");
+
 	program = initShaders(gl, "vert", "frag");
 
 	gl.useProgram(program);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
-	document.getElementById("clear_button").onclick = handleClearButton;
+
 
 	shape_being_drawn = new Shape(shapes_finished_list);
-
+	set_draw_mode("point");
+	document.getElementById("clear_button").onclick = handleClearButton;
+	document.getElementById("drawmode_select").onchange = handleChangedDrawMode
 
 	//render();
 	console.trace("Ended");
@@ -84,15 +114,17 @@ function init_stuff()
 function render() {
 	gl.clear(gl.COLOR_BUFFER_BIT);
 
-	for(let n=0; n<shapes_finished_list.length; n++)
+	for(let n=0; n < shapes_finished_list.length; n++)
 	{
 		send_floats_to_attribute_buffer("a_Position",shapes_finished_list[n].points,2,gl,program);
 		send_floats_to_attribute_buffer("a_Color",shapes_finished_list[n].colors,4,gl,program);
-		gl.drawArrays(gl.POINTS, 0,shapes_finished_list[n].drawCount);
+		gl.drawArrays(shapes_finished_list[n].drawType, 0,shapes_finished_list[n].drawCount);
 	}
 	if( shape_being_drawn.hasPoints() )
 	{
-
+		send_floats_to_attribute_buffer("a_Position",flatten(shape_being_drawn.points),2,gl,program);
+		send_floats_to_attribute_buffer("a_Color",flatten(shape_being_drawn.colors),4,gl,program);
+		gl.drawArrays(shape_being_drawn.drawType, 0,shape_being_drawn.drawCount);
 	}
 
 	window.requestAnimationFrame(render);
@@ -104,6 +136,28 @@ function handleClearButton()
 		shapes_finished_list.pop(); // did not find a clear method
 	}
 	shape_being_drawn.clear();
+}
+function handleChangedDrawMode()
+{
+	let found_mode = false;
+	let selected_mode;
+	let possible_modes = document.getElementById("drawmode_select");
+	for( let n=0; n<possible_modes.length; n++ )
+	{
+		if(possible_modes[n].selected)
+		{
+			selected_mode =possible_modes[n].value;
+			found_mode=true;
+			break;
+		}
+	}
+	if(!found_mode)
+	{
+		console.log("unable to determine selected drawmode");
+		return;
+	}
+	console.log("Selected drawmode "+selected_mode);
+	set_draw_mode(selected_mode);
 }
 function getSelectedColor()
 {

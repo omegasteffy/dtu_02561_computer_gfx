@@ -25,9 +25,17 @@
 	<canvas id='draw_area' height="512" width="512" >
     </canvas><br/>
     <table>
-        <div id="draw_mode_indicator"></div>
-        <button type="submit" id="clear_button">Clear drawing</button><br>
-
+        <div><b>Drawing mode</b></div>
+        <select id="drawmode_select">
+            <option value="point">Points</option>
+            <option value="triangle">Triangle</option>
+        </select>        
+        <table>
+            <tr>
+                <td>Current mode:</td><td id="draw_mode_indicator"></td>
+            </tr>
+        
+           <tr><td>Select color:</td><td>
         <select id="colorselect">
             <option value="red">Red</option>
             <option value="blue">Blue</option>
@@ -40,7 +48,9 @@
             <option value="brown">Brown</option>
             <option value="light_blue_clearing_color">Background</option>
           </select> 
-    </table>
+        </td>
+    </table><br>
+    <button type="submit" id="clear_button">Clear drawing</button>
     <script src="../angel_common/initShaders.js"></script>
     <script src="../angel_common/webgl-utils.js"></script>
     <script src="../angel_common/MV.js"></script>
