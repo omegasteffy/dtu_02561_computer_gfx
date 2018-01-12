@@ -1,19 +1,19 @@
 <html>
-	<title>Something something</title>
+	<title>Worksheet 2 - Part 1</title>
 
 
-    <script id="vert1" type="x-shader/x-vertex" >
-	    attribute vec4 vPosition;
-        attribute vec4 vColor;
+    <script id="vert" type="x-shader/x-vertex" >
+	    attribute vec4 a_Position;
+        attribute vec4 a_Color;
         varying vec4 v_color;
 	    void main()
 	    {
 		    gl_PointSize = 20.0;
-		    gl_Position = vPosition;
-            v_color = vColor;
+		    gl_Position = a_Position;
+            v_color = a_Color;
 	    }
     </script>
-    <script id="frag1" type="x-shader/x-fragment" >
+    <script id="frag" type="x-shader/x-fragment" >
 	    precision mediump float;
         varying vec4 v_color;
 	    void main()
@@ -23,16 +23,14 @@
     </script>
 <body>
 	<canvas id='draw_area' height="512" width="512" >
+    </canvas><br/>
+    <table>
 
-    </canvas>
-    <form>
-        <button type="submit" id="coordinate">Show coordinate</button><br>
-        <button type="submit" id="add_triangle">Add triangle</button><br>
-        <button type="submit" id="add_point">Add point</button><br>
-    </form>
+    </table>
     <script src="../angel_common/initShaders.js"></script>
     <script src="../angel_common/webgl-utils.js"></script>
     <script src="../angel_common/MV.js"></script>
+    <script src="../other_common/helpers.js"></script>
     <script src="ws2_part1.js"></script>
 
 
