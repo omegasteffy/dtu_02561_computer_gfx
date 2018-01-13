@@ -12,6 +12,30 @@ Context/usage
 	The size aspect also make the prodeedural methods to be used in size-restricted demostrations (the 4 & 64k intro of the demoscene), although this admittedly is a sub-genre.
 	It is worth mentioning the methods might require more cpu/gpu power to compute than a texture (but on the other hand the tranfer between CPU and GPU is often considered a the biggest bottleneck)
 	
+
+
+Setting up the scene/block diagram / overview
+	
+  2D-grid 
+	The first step is simply to setup some kind of 2D-grid.	
+  Vertex shader: Calculate height
+	The calculation of the 
+  Fragment shader calculate lightning + apply texture
+
+Implementation details
+	0) about the middle steps
+	1) The grid
+	2) Grid + noise
+	3/4) Noise evaluation
+	5) Getting normals of the surface
+	6) Applying lightning
+	7) Height rules
+	8) Random sampling of grass
+	9) Moving camera
+Issues encountered
+Conclussion / further improvement
+
+
 Show noise function
 	To generate some kind of beliveable terrain we can not just completely white noise
 	IMAGE WHITE NOISE
@@ -35,14 +59,3 @@ Show noise function
 	fast to compute
 	parralizable (offload to GPU/shader code)
 
-Setting up the scene/block diagram / overview
-	
-  2D-grid 
-	The first step is simply to setup some kind of 2D-grid.	
-  Vertex shader: Calculate height
-	The calculation of the 
-  Fragment shader calculate lightning + apply texture
-
-Implementation details
-Details + Fine funing
-Conclussion / further improvement
