@@ -2,7 +2,6 @@ console.trace("Started");
 let canvas;
 let gl;
 let program;
-let initial_points;
 let shapes_finished_list= Array();
 let shape_being_drawn={};
 let current_drawmode='';
