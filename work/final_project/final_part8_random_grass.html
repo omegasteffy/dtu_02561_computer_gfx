@@ -206,8 +206,9 @@
                 return COLOR_SAND; //grey
             }
             float noise_sample = noise(vec2(original_xy_coord.x*4.0,(original_xy_coord.y+time)*4.0)); //4x higher frequency
-            const float grass_dominace  = 0.5;
-            float grass_factor = clamp( 2.0 *(noise_sample+grass_dominace) ,0.0 , 1.0 );
+            const float grass_dominace  = 0.5; //zero means equal amount of grass/sand. Positive => more grass.
+            const float slope_factor = 2.0; // higher slope factor =>fewer areas of mixed grass/sand ... more area will be clamped
+            float grass_factor = clamp( slope_factor *(noise_sample+grass_dominace) ,0.0 , 1.0 );
             return mix(COLOR_SAND,COLOR_GRASS,grass_factor);
         }
 	    void main()
