@@ -11,3 +11,4 @@ Shading types:
 
 Bling-Phong (aka modified Phong): Approximation of reflection in Phong, using halfway vector.
 		Rather than calculating the exact reflection from normal and light (r*v), we use norm(l+v)
+Implementation of light model in GLSL http://www.sunandblackcat.com/tipFullView.php?l=eng&topicid=30
