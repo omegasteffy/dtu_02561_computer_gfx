@@ -1,5 +1,5 @@
 <html>
-	<title>Worksheet 2 - Part 2</title>
+	<title>Worksheet 2 - Part 4</title>
 
 
     <script id="vert" type="x-shader/x-vertex" >
@@ -22,6 +22,23 @@
 	    }
     </script>
 <body>
+        <h1>Worksheet 2 - Part 4</h1>
+	<div>
+        Now you can also draw the circle.The implementation was easy to extend<br>
+        The second point of the circle is used for calculating the radius.<br>
+        There circle approximate round with 11-triangle (suffient to make use seem like a cheap approximation of round)
+
+        The worksheets proposed a quite complicated solution, and i chose a different approach (IMO simpler)<br>
+        Implementation still use the same Object-style approach:<br>
+        a) There is a list of completed shapes, each with a describtion of points + which drawmode to use<br>
+        b) There is a preliminary object which will receive the new points the user clicks<br>
+        c) Every time the preliminary object have enough points to complete the choosen shape it will add to the list of completed shapes<br>
+        d) The render function draws both completed shapes and the preliminary object.<br>
+        <br>
+        
+
+</div>  
+
 	<canvas id='draw_area' height="512" width="512" >
     </canvas><br/>
     <table>

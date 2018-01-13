@@ -6,7 +6,7 @@ let shapes_finished_list= Array();
 let shape_being_drawn={};
 let current_drawmode='';
 
-
+/**constructor */
 let shape_point = function(point,color)
 {
 	this.points = flatten(point);
@@ -15,6 +15,7 @@ let shape_point = function(point,color)
 	this.shapeType = 'point';
 	this.drawType = gl.POINTS;
 }
+/**constructor */
 let shape_triangle = function(point,color)
 {
 	this.points = flatten(point);
@@ -23,7 +24,7 @@ let shape_triangle = function(point,color)
 	this.shapeType = 'triangle';
 	this.drawType = gl.TRIANGLES;
 }
- 
+ /**constructor */
 var ShapePreliminary = function(dest){
 	this.points = []
 	this.colors = [];
