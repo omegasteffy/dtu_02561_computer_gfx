@@ -98,6 +98,7 @@
             vec4  Pos = a_Position.xzyw;
             float noise_res = noise_and_normal(a_Position.xy,time,0.05,v_normal);
             Pos.y  = .8*noise_res; //Apply noise sample as height
+            v_normal = -v_normal;
 
             //we got final pos and can calculate light variables
             vec3 vertex_pos_camSpace = (camera_Matrix*trsMatrix*Pos).xyz;
