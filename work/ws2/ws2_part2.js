@@ -19,8 +19,6 @@ function init_stuff()
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
 	document.getElementById("clear_button").onclick = handleClearButton;
-
-	//render();
 	console.trace("Ended");
 	render();
 }
@@ -81,12 +79,14 @@ canvas.addEventListener("click",
 				x: event.clientX - curser_offset.x,
 				y: event.clientY - curser_offset.y
 			};
+		//Correct toward pointing part of cursor
 		let view_port_pos =
 		{
 				x: -1 + (click_pos.x / event.target.height)*2 ,
 			y: 1 - (click_pos.y / event.target.width) *2
 		};
 		console.log("x=" + (click_pos.x) + " y=" + (click_pos.y) + " or x=" + view_port_pos.x + "y=" + view_port_pos.y);
+
 		draw_request = {};
 		draw_request.points = new Float32Array([view_port_pos.x, view_port_pos.y]);
 		draw_request.color = getSelectedColor();
