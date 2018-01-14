@@ -68,7 +68,6 @@
     uniform mat4 trsMatrix;
     uniform mat4 proj_Matrix;
     uniform mat4 camera_Matrix;
-    varying  vec4 v_color;
     varying  vec3 v_normal;
     varying float raw_height;
         
@@ -101,7 +100,6 @@
     </script>
     <script id="frag" type="x-shader/x-fragment" >  
 	    precision mediump float;
-        varying  vec4 v_color;
         varying  vec3 v_normal;
         varying vec3 N,L,E;
         varying float raw_height;
@@ -143,12 +141,12 @@
 
         vec4 specularColor  = vec4(1.0,0.8,0.8,1.0); // red-ish tone
         vec4 diffuseColor   = vec4(1.0,1.0,1.0,1.0);
-        vec4 ambientColor   = vec4(0.0,0.0,0.1,1.0);
+        vec4 ambientColor   = vec4(1.0,1.0,1.0,1.0);
 
         float shinyness = 3.0;
 
         float specular_coef = 0.0;
-        float ambient_coef  = 0.25;
+        float ambient_coef  = 0.2;
         float diffuse_coef  = 0.55;
 
 	    void main()
@@ -159,10 +157,8 @@
 
             vec4 point_color = determine_color(raw_height,specular_coef);
 
-            
-
-            float Kd = max(dot(L_norm,N_norm),0.0); // but never negative
-            //float Kd = pow(max(dot(L_norm,N_norm),0.0),0.3); // but never negative
+            float Kd = max(dot(L_norm,N_norm),0.0);
+            //float Kd = pow(max(dot(L_norm,N_norm),0.0),0.3); // experiment to tone down the bright areas
             vec4  diffuse = Kd *diffuseColor*point_color;
     
             //calculation of specular light is 
@@ -179,10 +175,17 @@
 	    }
     </script>
 <body>
+
+    <h1>Project - Part 7 - Elevation rules</h1>
+    <div>
+        The landscape is made a lot more varied simply by setting thresholds for different colors.<br />
+        The thresholds for clamping at sealevel threshold is implemented upon sampling the noise function in the vertex shader<br />
+        Rules/thresholds for colors are set in fragment shader.
+    </div>
     <tr>
-        <td>Enabled scrolling</td>
-        <td><input type="checkbox" id="enable_scroll" checked></td>
-    </tr><br/>
+    <td>Enabled scrolling</td>
+    <td><input type="checkbox" id="enable_scroll" checked></td>
+</tr><br />
 	<canvas id='draw_area' height="512" width="512" />
     <script src="../angel_common/initShaders.js"></script>
     <script src="../angel_common/webgl-utils.js"></script>
