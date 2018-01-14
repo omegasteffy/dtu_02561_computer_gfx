@@ -2,7 +2,7 @@
 let gl;
 let program;
 let uniforms;
-let stuff;
+let grid;
 let time;
 
 setup_stuff();
@@ -57,8 +57,8 @@ function setup_stuff()
 	gl.uniform4fv(uniforms.light_pos, flatten(light_pos));
 
 
-	stuff = plane_3d(gl,50,30);
-	send_floats_to_attribute_buffer("a_Position", stuff.points, 2, gl, program);
+	grid = plane_3d(gl,50,30);
+	send_floats_to_attribute_buffer("a_Position", grid.points, 2, gl, program);
 
 	//  //gl.drawArrays(gl.LINE_STRIP, 0,6);
 	// //return;
@@ -69,7 +69,7 @@ function setup_stuff()
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
 
 	//// Pass the vertex data to the buffer
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, stuff.indecies, gl.STATIC_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, grid.indecies, gl.STATIC_DRAW);
 
 	//// Draw the triangle
 	//gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_SHORT, 0);
@@ -90,6 +90,6 @@ function render()
 	}
 	gl.uniform1f(uniforms.time,time);
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	gl.drawElements(gl.TRIANGLES, stuff.indecies.length, gl.UNSIGNED_SHORT, 0);
+	gl.drawElements(gl.TRIANGLES, grid.indecies.length, gl.UNSIGNED_SHORT, 0);
 	requestAnimationFrame(render); 
 }
