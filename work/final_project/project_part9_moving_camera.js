@@ -2,30 +2,32 @@
 let gl;
 let program;
 let uniforms;
-let stuff;
+let grid;
 let time;
 let eyePos;
 let upVec;
 let cameraTarget;
-
-setup_stuff();
-
+let wireframe_mode;
+init();
+function init() {	
+	setup_stuff();
+	document.getElementById("wireframe_mode").onchange = setup_stuff;
+	render();
+}
 function setup_stuff()
 {
+	wireframe_mode = document.getElementById("wireframe_mode").checked;
 	console.trace("Started");	
 	const canvas = document.getElementById('draw_area');
 	gl = WebGLUtils.setupWebGL(canvas, { alpha: false });
 
 	program = initShaders(gl, "vert", "frag");
-	program_coord = initShaders(gl, "simple_vert", "simple_frag");
-	gl.useProgram(program);
 	uniforms=cacheUniformLocations(gl, program);
-	let uniforms_coord=cacheUniformLocations(gl, program_coord);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
+	//camera setup initial
 	eyePos = vec3(1.5,1.8,-1.2); 
-	
 	upVec = vec3(0.0, 1.0, 0.0);//we just need the orientation... it will adjust itself
 	cameraTarget = vec3(1.5, 0.8, 3.0);// for isometric we should look at origo
 
@@ -42,16 +44,7 @@ function setup_stuff()
 
 	//gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
-	trsMatrix = mat4(); // no transformations just yet
-	let coord = coordinateSystem(gl);
-	gl.useProgram(program_coord);
-	gl.uniformMatrix4fv(uniforms_coord.proj_Matrix, false, flatten(perMatrix));
-	gl.uniformMatrix4fv(uniforms_coord.camera_Matrix, false, flatten(cameraMatrix));
-	gl.uniformMatrix4fv(uniforms_coord.trsMatrix, false, flatten(trsMatrix));
-
 	gl.clear(gl.COLOR_BUFFER_BIT );
-	send_array_to_attribute_buffer("a_Position", coord.points, 3, gl, program);
-	gl.drawArrays(gl.LINES, 0, coord.drawCount);
 	gl.useProgram(program);
 	trsMatrix=scalem(3.0,1.0,5);
 	gl.uniformMatrix4fv(uniforms.proj_Matrix, false, flatten(perMatrix));
@@ -60,25 +53,20 @@ function setup_stuff()
 	gl.uniform4fv(uniforms.light_pos, flatten(light_pos));
 
 
-	stuff = plane_3d(gl,50,30);
-	send_floats_to_attribute_buffer("a_Position", stuff.points, 2, gl, program);
+	grid = plane_3d(gl,100,30);
+	send_floats_to_attribute_buffer("a_Position", grid.points, 2, gl, program);
 
-	//  //gl.drawArrays(gl.LINE_STRIP, 0,6);
-	// //return;
-	// Create an empty buffer object to store Index buffer
 	let index_buffer = gl.createBuffer();
+	if (wireframe_mode) {
 
-	//// Bind appropriate array buffer to it
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
-
-	//// Pass the vertex data to the buffer
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, stuff.indecies, gl.STATIC_DRAW);
-
-	//// Draw the triangle
-	//gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_SHORT, 0);
-
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, grid.line_indecies, gl.STATIC_DRAW);
+	} else
+	{
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, grid.indecies, gl.STATIC_DRAW);
+	}
 	time=0.0;
-render(); // no need for since we only have a static image
 
 }
 
@@ -99,6 +87,13 @@ function render()
 	gl.uniformMatrix4fv(uniforms.camera_Matrix,false,flatten(cameraMatrix));
 
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	gl.drawElements(gl.TRIANGLES, stuff.indecies.length, gl.UNSIGNED_SHORT, 0);
+
+	if (wireframe_mode)
+	{
+		gl.drawElements(gl.LINES, grid.line_indecies.length, gl.UNSIGNED_SHORT, 0);
+	}else
+	{
+		gl.drawElements(gl.TRIANGLES, grid.indecies.length, gl.UNSIGNED_SHORT, 0);
+	}
 	requestAnimationFrame(render); 
 }
