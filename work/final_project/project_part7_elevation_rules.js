@@ -14,7 +14,6 @@ function setup_stuff()
 	gl = WebGLUtils.setupWebGL(canvas, { alpha: false });
 
 	program = initShaders(gl, "vert", "frag");
-	gl.useProgram(program);
 	uniforms=cacheUniformLocations(gl, program);
 
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
@@ -47,26 +46,14 @@ function setup_stuff()
 	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
 	gl.uniform4fv(uniforms.light_pos, flatten(light_pos));
 
-
 	grid = plane_3d(gl,50,30);
 	send_floats_to_attribute_buffer("a_Position", grid.points, 2, gl, program);
 
-	//  //gl.drawArrays(gl.LINE_STRIP, 0,6);
-	// //return;
-	// Create an empty buffer object to store Index buffer
 	let index_buffer = gl.createBuffer();
-
-	//// Bind appropriate array buffer to it
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
-
-	//// Pass the vertex data to the buffer
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, grid.indecies, gl.STATIC_DRAW);
-
-	//// Draw the triangle
-	//gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_SHORT, 0);
-
 	time=0.0;
-render(); // no need for since we only have a static image
+	render();
 
 }
 
