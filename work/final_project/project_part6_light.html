@@ -65,7 +65,6 @@
         uniform mat4 trsMatrix;
         uniform mat4 proj_Matrix;
         uniform mat4 camera_Matrix;
-        varying  vec4 v_color;
         varying  vec3 v_normal;
         
 
@@ -96,37 +95,31 @@
     </script>
     <script id="frag" type="x-shader/x-fragment" >
 	    precision mediump float;
-        varying  vec4 v_color;
+        const vec4 GRASS_COLOR = vec4(.2,.9,0.2,1.0);
         varying  vec3 v_normal;
         varying vec3 N,L,E;
 	    void main()
 	    {
-            vec3 N_norm = N;
-            vec3 L_norm = L;
-            vec3 E_norm = E;
+            vec3 N_norm = normalize(N);
+            vec3 L_norm = normalize(L);
+            vec3 E_norm = normalize(E);
     
-          //  if(normalize_light_param)
-            {
-                N_norm=normalize(N);
-                L_norm=normalize(L);
-                E_norm=normalize(E);
-            }
             vec4 specularColor = vec4(1.0,1.0,1.0,1.0);
-            vec4 diffuseColor=vec4(1.0,1.0,1.0,1.0);
-            vec4 ambientColor=vec4(0.0,0.0,0.1,1.0);
+            vec4 diffuseColor=   vec4(1.0,1.0,1.0,1.0);
+            vec4 ambientColor=   vec4(1.0,1.0,1.0,1.0);
             float shinyness = 20.0;
-            float specular_coef = 0.2;
-            float ambient_coef = 0.08;
+            float specular_coef = 0.1;
+            float ambient_coef = 0.1;
             float diffuse_coef =  0.3;
 
-            vec4 point_color = vec4(.2,.9,0.2,1.0);
-
             float Kd = max(dot(L_norm,N_norm),0.0); // but never negative
-            vec4  diffuse = Kd *diffuseColor*point_color;
+            vec4  diffuse = Kd *diffuseColor*GRASS_COLOR;
     
-            //calculation of specular light is 
+            //calculation of specular light is performed using the half-way vector (should be more efficient)
             vec3  H = normalize(L_norm+E_norm);//half-way vector
             float Ks = pow( max(dot(N_norm,H),0.0) , shinyness);
+        //    vec3 R = reflect(L,N);
+          //  float Ks = pow( max(dot(N_norm,R),0.0) , shinyness);
             vec4  specular = Ks* specularColor;
             
             if( dot(L_norm,N_norm) < 0.0 )
@@ -135,11 +128,17 @@
             }
     
     
-            gl_FragColor = (point_color*ambient_coef) +diffuse*diffuse_coef + specular*specular_coef;
-           //gl_FragColor =specular*specular_coef;
+            gl_FragColor = (GRASS_COLOR*ambient_coef) +diffuse*diffuse_coef + specular*specular_coef;
 	    }
     </script>
 <body>
+    <h1>Project - Part 6 - Illumination</h1>
+    <div>
+        The scene is set up with a light source behind the camera<br>
+        The light model is modifie phong shading.
+        Only a single color is used, but adding light still gives help a lot with the perceptio nof depth.<br />
+        The sign of the normal vector had to be flipped to give correct indication of where light is located. The bug have not been found.
+    </div>
     <tr>
             <td>Enabled scrolling</td>
             <td><input type="checkbox" id="enable_scroll"></td>
