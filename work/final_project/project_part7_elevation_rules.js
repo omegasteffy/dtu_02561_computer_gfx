@@ -14,10 +14,9 @@ function setup_stuff()
 	gl = WebGLUtils.setupWebGL(canvas, { alpha: false });
 
 	program = initShaders(gl, "vert", "frag");
-	program_coord = initShaders(gl, "simple_vert", "simple_frag");
 	gl.useProgram(program);
 	uniforms=cacheUniformLocations(gl, program);
-	let uniforms_coord=cacheUniformLocations(gl, program_coord);
+
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
@@ -39,16 +38,8 @@ function setup_stuff()
 
 	//gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
-	trsMatrix = mat4(); // no transformations just yet
-	let coord = coordinateSystem(gl);
-	gl.useProgram(program_coord);
-	gl.uniformMatrix4fv(uniforms_coord.proj_Matrix, false, flatten(perMatrix));
-	gl.uniformMatrix4fv(uniforms_coord.camera_Matrix, false, flatten(cameraMatrix));
-	gl.uniformMatrix4fv(uniforms_coord.trsMatrix, false, flatten(trsMatrix));
-
 	gl.clear(gl.COLOR_BUFFER_BIT );
-	send_array_to_attribute_buffer("a_Position", coord.points, 3, gl, program);
-	gl.drawArrays(gl.LINES, 0, coord.drawCount);
+
 	gl.useProgram(program);
 	trsMatrix=scalem(3.0,1.0,5);
 	gl.uniformMatrix4fv(uniforms.proj_Matrix, false, flatten(perMatrix));

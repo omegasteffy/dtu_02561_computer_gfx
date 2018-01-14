@@ -1,32 +1,11 @@
 ﻿<html>
-	<title>Final Project</title>
-
-    <script id="simple_vert" type="x-shader/x-vertex" >
-	    attribute vec4   a_Position;
-        uniform mat4 trsMatrix;
-        uniform mat4 proj_Matrix;
-        uniform mat4 camera_Matrix;
-        varying  vec4 v_color;
-	    void main()
-        {
-
-            gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
-            v_color.rg = a_Position.xy;
-	    }
-    </script>
-    <script id="simple_frag" type="x-shader/x-fragment" >
-	    precision mediump float;
-        varying  vec4 v_color;
-        
-	    void main()
-	    {
-            gl_FragColor = vec4(1.0,1.0,1.0,0.5);
-            gl_FragColor.rgb =v_color.rgb;
-	    }
-    </script>
+	<title>Final Project - Part 7 - Elevation rules</title>
     <script id="vert" type="x-shader/x-vertex" >
-
-        //The hash and noise function is taken from https://www.shadertoy.com/view/Msf3WH
+//-------------------------------------------------------------------------------------------------------------------------
+    // The hash and noise function is taken from https://www.shadertoy.com/view/Msf3WH
+    // The MIT License
+    // Copyright © 2013 Inigo Quilez
+    // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     vec2 hash( vec2 p ) // replace this by something better
     {
         p = vec2( dot(p,vec2(127.1,311.7)),
@@ -54,6 +33,8 @@
         return dot( n, vec3(70.0) );
         
     }
+//-------------------------------------------------------------------------------------------------------------------------    
+
     const float SEA_LEVEL = 0.0;
     const float LOWER_OFFSET =0.30;
     float noise_sum(in vec2 coord,in float time)
@@ -82,41 +63,41 @@
        
         return p0.y;
     }
-        uniform float time;
-	    attribute vec4   a_Position;
-        uniform mat4 trsMatrix;
-        uniform mat4 proj_Matrix;
-        uniform mat4 camera_Matrix;
-        varying  vec4 v_color;
-        varying  vec3 v_normal;
-        varying float raw_height;
+    uniform float time;
+	attribute vec4   a_Position;
+    uniform mat4 trsMatrix;
+    uniform mat4 proj_Matrix;
+    uniform mat4 camera_Matrix;
+    varying  vec4 v_color;
+    varying  vec3 v_normal;
+    varying float raw_height;
         
 
-        //light-stuff
-        varying vec3 N,L,E;
-        uniform vec4 light_pos;
+    //light-stuff
+    varying vec3 N,L,E;
+    uniform vec4 light_pos;
         
-	    void main()
-        {
-            vec4  Pos = a_Position.xzyw;
-            float noise_res = noise_and_normal(a_Position.xy,time,0.05,v_normal);
-            v_normal = -v_normal;
-            Pos.y  = noise_res; //Apply noise sample as height
-            raw_height =noise_res;
+	void main()
+    {
+        vec4  Pos = a_Position.xzyw;
+        float noise_res = noise_and_normal(a_Position.xy,time,0.05,v_normal);
+        v_normal = -v_normal;
+        Pos.y  = noise_res; //Apply noise sample as height
+        raw_height =noise_res;
 
-            //we got final pos and can calculate light variables
-            vec3 vertex_pos_camSpace = (camera_Matrix*trsMatrix*Pos).xyz;
-            vec3 light_pos_camSpace = (camera_Matrix*light_pos).xyz;
+        //we got final pos and can calculate light variables
+        vec3 vertex_pos_camSpace = (camera_Matrix*trsMatrix*Pos).xyz;
+        vec3 light_pos_camSpace = (camera_Matrix*light_pos).xyz;
 
-            vec4 normal4d;
-            normal4d.w = 0.0;
-            normal4d.xyz = v_normal;
-            L = normalize( light_pos_camSpace - vertex_pos_camSpace ); // light from a specific point
-            E = -vertex_pos_camSpace; //away from the vertex toward origo... the camera/eye
-            N = normalize((camera_Matrix*trsMatrix*normal4d).xyz); //normalized Normal vector
+        vec4 normal4d;
+        normal4d.w = 0.0;
+        normal4d.xyz = v_normal;
+        L = normalize( light_pos_camSpace - vertex_pos_camSpace ); // light from a specific point
+        E = -vertex_pos_camSpace; //away from the vertex toward origo... the camera/eye
+        N = normalize((camera_Matrix*trsMatrix*normal4d).xyz); //normalized Normal vector
 
-            gl_Position = proj_Matrix * camera_Matrix * trsMatrix *Pos;
-	    }
+        gl_Position = proj_Matrix * camera_Matrix * trsMatrix *Pos;
+	}
     </script>
     <script id="frag" type="x-shader/x-fragment" >  
 	    precision mediump float;
@@ -124,6 +105,8 @@
         varying  vec3 v_normal;
         varying vec3 N,L,E;
         varying float raw_height;
+
+
         const float LEVEL_SEA = 0.00;
         const float LEVEL_MOUNTAIN = 0.50;
         const float LEVEL_MOUNTAIN_SNOW = 0.65;
@@ -133,6 +116,30 @@
         const vec4 COLOR_MOUNTAIN = vec4(.6,.6,0.6,1.0);
         const vec4 COLOR_SNOW = vec4(.97,.97,0.97,1.0);
         const vec4 COLOR_WATER = vec4(.1,.1,0.9,1.0);
+
+
+        vec4 determine_color(in float elevation, out float spec_coef)
+        {
+            
+            if( (elevation - LEVEL_PRECISION_SLACK) <= LEVEL_SEA)
+            {
+                return COLOR_WATER; //Bluish
+            }
+            if( elevation >= LEVEL_MOUNTAIN_SNOW )
+            {
+                spec_coef=.5;//.. and even more that ice can
+                return COLOR_SNOW; //white
+            }
+            if( elevation >= LEVEL_MOUNTAIN )
+            {
+                spec_coef = 0.3; //it makes sense that a mountain can reflect light
+                return COLOR_MOUNTAIN; //grey
+            }
+
+            //else...
+            return COLOR_GRASS;
+            
+        }
 
         vec4 specularColor  = vec4(1.0,0.8,0.8,1.0); // red-ish tone
         vec4 diffuseColor   = vec4(1.0,1.0,1.0,1.0);
@@ -150,21 +157,8 @@
             vec3 L_norm = normalize(L);
             vec3 E_norm = normalize(E);
 
-            vec4 point_color = COLOR_GRASS;
-            if( (raw_height - LEVEL_PRECISION_SLACK) <= LEVEL_SEA)
-            {
-                point_color = COLOR_WATER; //Bluish
-            }
-            if( raw_height >= LEVEL_MOUNTAIN )
-            {
-                specular_coef=.1;
-                point_color = COLOR_MOUNTAIN; //grey
-            }
-            if( raw_height >= LEVEL_MOUNTAIN_SNOW )
-            {
-                specular_coef=.3;
-                point_color = COLOR_SNOW; //white
-            }
+            vec4 point_color = determine_color(raw_height,specular_coef);
+
             
 
             float Kd = max(dot(L_norm,N_norm),0.0); // but never negative
@@ -179,21 +173,15 @@
             if( dot(L_norm,N_norm) < 0.0 )
             {
                 specular  = vec4(0.0 , 0.0 , 0.0 , 1.0);
-            }
-    
+            }       
     
             gl_FragColor = (point_color*ambient_coef) +diffuse*diffuse_coef + specular*specular_coef;
-          // gl_FragColor =specular*specular_coef;
-
-
-          //  gl_FragColor = vec4(1.0,0.0,0.0,1.0);
-         //    gl_FragColor.rgb =vec3(.5,.5,.5)+normalize(v_normal.rgb);
 	    }
     </script>
 <body>
     <tr>
-            <td>Enabled scrolling</td>
-            <td><input type="checkbox" id="enable_scroll" checked></td>
+        <td>Enabled scrolling</td>
+        <td><input type="checkbox" id="enable_scroll" checked></td>
     </tr><br/>
 	<canvas id='draw_area' height="512" width="512" />
     <script src="../angel_common/initShaders.js"></script>
@@ -201,7 +189,7 @@
     <script src="../angel_common/MV.js"></script>
     <script src="../other_common/helpers.js"></script>
     <script src="plane3d.js"></script>
-    <script src="final_part7_height_rules.js"></script>
+    <script src="project_part7_elevation_rules.js"></script>
 </body>
 
 </html>
