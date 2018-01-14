@@ -2,9 +2,7 @@
 let gl;
 let program;
 let uniforms;
-let stuff;
-
-
+let grid;
 
 setup_stuff();
 
