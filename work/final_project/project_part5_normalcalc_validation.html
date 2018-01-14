@@ -1,32 +1,12 @@
 ﻿<html>
-	<title>Final Project</title>
+	<title>Final Project - Part 5 </title>
 
-    <script id="simple_vert" type="x-shader/x-vertex" >
-	    attribute vec4   a_Position;
-        uniform mat4 trsMatrix;
-        uniform mat4 proj_Matrix;
-        uniform mat4 camera_Matrix;
-        varying  vec4 v_color;
-	    void main()
-        {
-
-            gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
-            v_color.rg = a_Position.xy;
-	    }
-    </script>
-    <script id="simple_frag" type="x-shader/x-fragment" >
-	    precision mediump float;
-        varying  vec4 v_color;
-        
-	    void main()
-	    {
-            gl_FragColor = vec4(1.0,1.0,1.0,0.5);
-            gl_FragColor.rgb =v_color.rgb;
-	    }
-    </script>
     <script id="vert" type="x-shader/x-vertex" >
-
-        //The hash and noise function is taken from https://www.shadertoy.com/view/Msf3WH
+//-------------------------------------------------------------------------------------------------------------------------
+    // The hash and noise function is taken from https://www.shadertoy.com/view/Msf3WH
+    // The MIT License
+    // Copyright © 2013 Inigo Quilez
+    // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     vec2 hash( vec2 p ) // replace this by something better
     {
         p = vec2( dot(p,vec2(127.1,311.7)),
@@ -54,6 +34,7 @@
         return dot( n, vec3(70.0) );
         
     }
+//-------------------------------------------------------------------------------------------------------------------------    
     float noise_sum(in vec2 coord,in float time)
     {
         float noise_res  = 0.5*noise(vec2(coord.x,coord.y+time)) ;
@@ -93,7 +74,7 @@
             vec4  Pos=a_Position.xzyw;
             vec2  Pos2D = a_Position.xz;
             float noise_res = noise_and_normal(a_Position.xy,time,0.05,v_normal);
-            Pos.y  = .8*noise_res; //Apply noise sample as height
+            Pos.y  = noise_res; //Apply noise sample as height
             gl_Position = proj_Matrix * camera_Matrix * trsMatrix *Pos;
 	    }
     </script>
@@ -105,21 +86,28 @@
 	    void main()
 	    {
             gl_FragColor = vec4(1.0,0.0,0.0,1.0);
-             gl_FragColor.rgb =vec3(.5,.5,.5)+normalize(v_normal.rgb);
+             gl_FragColor.rgb =vec3(.5,.5,.5)+normalize(-v_normal.rgb);
 	    }
     </script>
 <body>
+
+    <h1>Project - Part 5 - Calculate normal vectors</h1>
+	<div>
+        Normal vector is needed for light model and the purpose of this sheet is to verify the results look right.<br>
+        Normal direction is represented by the color of each point (red imply normal vector is positive in x direction).<br>
+        We calculate the normal vector by performing 3x noise samples, making 2x vector and calculating cross-product of these.
+    </div>
     <tr>
-            <td>Enabled scrolling</td>
-            <td><input type="checkbox" id="enable_scroll"></td><br/>
-    </tr>
+        <td>Enabled scrolling</td>
+        <td><input type="checkbox" id="enable_scroll"></td><br/>
+</tr>
 	<canvas id='draw_area' height="512" width="512" />
     <script src="../angel_common/initShaders.js"></script>
     <script src="../angel_common/webgl-utils.js"></script>
     <script src="../angel_common/MV.js"></script>
     <script src="../other_common/helpers.js"></script>
     <script src="plane3d.js"></script>
-    <script src="final_part5_normalcalc_validation.js"></script>
+    <script src="project_part5_normalcalc_validation.js"></script>
 </body>
 
 </html>
