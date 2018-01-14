@@ -9,6 +9,7 @@ let lineSpec;
 let plane;
 let index_buffer;
 let time;
+//Create a smooth line by several short straigh lines
 function generate_line()
 {
 	let x={};
@@ -62,7 +63,6 @@ function setup_stuff()
 }
 
 
-
 function render()
 {	
 	let do_scroll = document.getElementById("enable_scroll").checked;
@@ -86,7 +86,7 @@ function render()
 	gl.drawElements(gl.TRIANGLES, plane.indecies.length, gl.UNSIGNED_SHORT, 0);
 
 	//Draw noise line
-	trsMatrix=mult(translate(-1,-.5,0), scalem(2.0,1.0,1.0));
+	trsMatrix=mult(translate(-1,-.5,0), scalem(2.0,1.0,1.0)); // move it down and to the left for it spans from -1,to 1 on the screen
 	gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
 	gl.uniform1i(uniforms.is_a_line, true);
 	
