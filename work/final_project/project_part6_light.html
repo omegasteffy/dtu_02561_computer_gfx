@@ -1,32 +1,11 @@
 ﻿<html>
-	<title>Final Project</title>
-
-    <script id="simple_vert" type="x-shader/x-vertex" >
-	    attribute vec4   a_Position;
-        uniform mat4 trsMatrix;
-        uniform mat4 proj_Matrix;
-        uniform mat4 camera_Matrix;
-        varying  vec4 v_color;
-	    void main()
-        {
-
-            gl_Position = proj_Matrix * camera_Matrix * trsMatrix * a_Position;
-            v_color.rg = a_Position.xy;
-	    }
-    </script>
-    <script id="simple_frag" type="x-shader/x-fragment" >
-	    precision mediump float;
-        varying  vec4 v_color;
-        
-	    void main()
-	    {
-            gl_FragColor = vec4(1.0,1.0,1.0,0.5);
-            gl_FragColor.rgb =v_color.rgb;
-	    }
-    </script>
+	<title>Final Project - Part 6</title>
     <script id="vert" type="x-shader/x-vertex" >
-
-        //The hash and noise function is taken from https://www.shadertoy.com/view/Msf3WH
+//-------------------------------------------------------------------------------------------------------------------------
+    // The hash and noise function is taken from https://www.shadertoy.com/view/Msf3WH
+    // The MIT License
+    // Copyright © 2013 Inigo Quilez
+    // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     vec2 hash( vec2 p ) // replace this by something better
     {
         p = vec2( dot(p,vec2(127.1,311.7)),
@@ -54,6 +33,7 @@
         return dot( n, vec3(70.0) );
         
     }
+//-------------------------------------------------------------------------------------------------------------------------    
     float noise_sum(in vec2 coord,in float time)
     {
         float noise_res  = 0.5*noise(vec2(coord.x,coord.y+time)) ;
@@ -97,7 +77,7 @@
         {
             vec4  Pos = a_Position.xzyw;
             float noise_res = noise_and_normal(a_Position.xy,time,0.05,v_normal);
-            Pos.y  = .8*noise_res; //Apply noise sample as height
+            Pos.y  = noise_res; //Apply noise sample as height
             v_normal = -v_normal;
 
             //we got final pos and can calculate light variables
@@ -105,7 +85,7 @@
             vec3 light_pos_camSpace = (camera_Matrix*light_pos).xyz;
 
             vec4 normal4d;
-            normal4d.w = 0.0;
+            normal4d.w = .0;
             normal4d.xyz = v_normal;
             L = normalize( light_pos_camSpace - vertex_pos_camSpace ); // light from a specific point
             E = -vertex_pos_camSpace; //away from the vertex toward origo... the camera/eye
@@ -135,8 +115,8 @@
             vec4 diffuseColor=vec4(1.0,1.0,1.0,1.0);
             vec4 ambientColor=vec4(0.0,0.0,0.1,1.0);
             float shinyness = 20.0;
-            float specular_coef = 0.9;
-            float ambient_coef = 0.06;
+            float specular_coef = 0.2;
+            float ambient_coef = 0.08;
             float diffuse_coef =  0.3;
 
             vec4 point_color = vec4(.2,.9,0.2,1.0);
@@ -145,7 +125,7 @@
             vec4  diffuse = Kd *diffuseColor*point_color;
     
             //calculation of specular light is 
-            vec3  H = normalize(L_norm+E_norm);
+            vec3  H = normalize(L_norm+E_norm);//half-way vector
             float Ks = pow( max(dot(N_norm,H),0.0) , shinyness);
             vec4  specular = Ks* specularColor;
             
@@ -157,10 +137,6 @@
     
             gl_FragColor = (point_color*ambient_coef) +diffuse*diffuse_coef + specular*specular_coef;
            //gl_FragColor =specular*specular_coef;
-
-
-          //  gl_FragColor = vec4(1.0,0.0,0.0,1.0);
-         //    gl_FragColor.rgb =vec3(.5,.5,.5)+normalize(v_normal.rgb);
 	    }
     </script>
 <body>
@@ -174,7 +150,7 @@
     <script src="../angel_common/MV.js"></script>
     <script src="../other_common/helpers.js"></script>
     <script src="plane3d.js"></script>
-    <script src="final_part6_light.js"></script>
+    <script src="project_part6_light.js"></script>
 </body>
 
 </html>
