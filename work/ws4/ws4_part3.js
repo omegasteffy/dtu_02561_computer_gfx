@@ -41,177 +41,6 @@ function quad_to_indicies(drawtype, a, b, c, d)
 	}
 }
 
-const CommonColors = {
-	"black": vec4(0.0, 0.0, 0.0, 1.0),
-	"red": vec4(1.0, 0.0, 0.0, 1.0),
-	"green": vec4(0.0, 1.0, 0.0, 1.0),
-	"blue":  vec4(0.0, 0.0, 1.0, 1.0),
-	"yellow":vec4(1.0, 1.0, 0.0, 1.0),
-	"pink":  vec4(1.0, 0.0, 0.5, 1.0),
-	"magenta": vec4(1.0, 0.0, 1.0, 1.0),
-	"orange": vec4(1.0, 0.62, 1.0, 1.0),
-	"lime":  vec4(.84, 0.99, 0.0, 1.0),
-	"brown": vec4(0.7, 0.25, .06, 1.0),
-	"light_blue_clearing_color": vec4(0.3921, 0.5843, 0.9294, .10)
-};
-
-function random_color() { return vec4(0.4 + 0.5 * Math.random(), 0.2 + 0.6 * Math.random(), 0.2 + 0.6 * Math.random(), 1.0); }
-
-/**
- * Creates points for a cube
- * positioned at origo, with a size of 1 unit on all sides
- * @param {GL_context} gl
- */
-function cube(gl, drawtype)
-{
-	if ((drawtype != gl_drawtype.LINES) && (drawtype != gl_drawtype.TRIANGLES))
-	{
-		throw ("Unsupported type");
-	}
-	//a cube have 6x-surfaces/faces
-	//hereby we should define 12 triangles or 
-
-	let x = { "type": "cube" };
-
-	const NEG = -.5;
-	const POS =  .5;
-	x.vertices = [
-		// To make it easier to grasp the placement, we have some beautyful 3D-ascii
-		//                  5-------6
-		//                 /|      /|
-		//                / |     / |
-		//               1--|----2  |
-		//               |  4----|--7
-		//               | /     | /
-		//               0-------3
-		vec3(NEG, NEG, POS),//0
-		vec3(NEG, POS, POS),//1
-		vec3(POS, POS, POS),//2
-		vec3(POS, NEG, POS),//3
-		vec3(NEG, NEG, NEG),//4
-		vec3(NEG, POS, NEG),//5
-		vec3(POS, POS, NEG),//6
-		vec3(POS, NEG, NEG),//7
-	];
-	x.col_vertices = [
-		CommonColors.red,//0
-		CommonColors.blue,//1
-		CommonColors.green,//2
-		CommonColors.yellow,//3
-		CommonColors.pink,//4
-		CommonColors.magenta, //5
-		CommonColors.brown, //6
-		CommonColors.lime //7  ...or call random_color()
-	];
-
-	x.face_indicies  =
-	[
-		quad_to_indicies(drawtype, 1, 0, 3, 2),//front
-		quad_to_indicies(drawtype, 2, 3, 7, 6),//right
-		quad_to_indicies(drawtype, 3, 0, 4, 7),//bottom
-		quad_to_indicies(drawtype, 6, 5, 1, 2),//top
-		quad_to_indicies(drawtype, 4, 5, 6, 7),//back
-		quad_to_indicies(drawtype, 5, 4, 0, 1)//right
-	];
-	x.points = []
-	x.colors = []
-	for (let k = 0; k < x.face_indicies.length ; k++)
-	{
-		let current_face = x.face_indicies[k];
-		for (let j = 0; j < current_face.length; j++) {
-			x.points.push(x.vertices[current_face[j]]);
-			x.colors.push(x.col_vertices[current_face[j]]);
-		}
-	}
-	x.drawtype = (gl_drawtype.LINES == drawtype) ? gl.LINES : gl.TRIANGLES;
-	x.drawCount = x.points.length;
-	return x;
-}
-
-/**
- * draw x,y,z direction
- */
-function coordinateSystem(gl)
-{
-	let x = {};
-	x.points = []
-	x.colors = []
-
-	x.points = [vec3(0, 0, 0), vec3(100, 0, 0),
-		vec3(0, 0, 0), vec3( 0, 100, 0),
-		vec3(0, 0, 0),vec3(0,0,100)
-	]
-	x.colors = [mix(CommonColors.black, CommonColors.red, 0.6), mix(CommonColors.black, CommonColors.red, 0.6),
-		mix(CommonColors.black, CommonColors.green, 0.6), mix(CommonColors.black, CommonColors.green, 0.6),
-		mix(CommonColors.black, CommonColors.blue, 0.6),mix(CommonColors.black, CommonColors.blue, 0.6)
-	]
-
-	x.drawtype = gl.LINES;
-	x.drawCount = x.points.length;
-	return x;
-}
-function send_array_to_buffer(buffername, input_data, data_dimension, gl, program) {
-	let buffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, buffer); // make it the current buffer assigned in WebGL
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(input_data), gl.STATIC_DRAW);//link the JS-points and the 
-	let attribLocation = gl.getAttribLocation(program, buffername); // setup a pointer to match the 
-	gl.vertexAttribPointer(attribLocation, data_dimension, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(attribLocation);
-}
-function cacheUniformLocations(gl, program) {
-	const activeUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-	const uniformLocations = {};
-	for (let i = 0; i < activeUniforms; i++) {
-		const info = gl.getActiveUniform(program, i);
-		uniformLocations[info.name] = gl.getUniformLocation(program, info.name);
-	}
-	return uniformLocations;
-}
-
-function sphere(subDivision)
-{
-	function tetrahedron(a, b, c, d, n, dest) {
-		divideTriangle(a, b, c, n, dest);
-		divideTriangle(d, c, b, n, dest);
-		divideTriangle(a, d, b, n, dest);
-		divideTriangle(a, c, d, n, dest);
-	}
-
-	function divideTriangle(a, b, c, count, dest) {
-		if (count > 0) {
-			let ab = normalize(mix(a, b, 0.5), true);
-			let ac = normalize(mix(a, c, 0.5), true);
-			let bc = normalize(mix(b, c, 0.5), true);
-			divideTriangle(a, ab, ac, count - 1, dest);
-			divideTriangle(ab, b, bc, count - 1, dest);
-			divideTriangle(bc, c, ac, count - 1, dest);
-			divideTriangle(ab, bc, ac, count - 1, dest);
-		} else {
-			//triangle(a, b, c, dest) ... inlined
-			dest.push(a);
-			dest.push(b);
-			dest.push(c);
-		}
-	}
-
-	let x = {};
-	x.Points = [];
-	x.Normals = [];
-	x.Colors = [];
-	let va = vec4(0.0, 0.0, 1.0, 1.0);
-	let vb = vec4(0.0, 0.942809, -0.33, 1.0);
-	let vc = vec4(-0.816497, -0.471405, -0.33, 1.0);
-	let vd = vec4(0.816497, -0.471405, -0.33, 1.0);
-
-	tetrahedron(va, vb, vc, vd, subDivision, x.Points);
-	for (let n = 0; x.Points.length > n; n++) {
-		//color = 0.5*p + 0.3
-		x.Colors[n] = vec4(0.3 + x.Points[n][0], 0.3 + x.Points[n][1], 0.3 + x.Points[n][2], 1.0);
-		x.Normals[n] = x.Points[n];
-	}
-	return x;
-
-}
 
 function setup_stuff()
 {
@@ -236,7 +65,8 @@ setup_stuff();
 
 function render()
 {
-	sphere1 = sphere(document.getElementById('subdivision_slider').value);
+	let triangle_divisions = document.getElementById('subdivision_slider').value
+	sphere1 = sphere_3d(triangle_divisions);
 	time += 1;
 	let eyePos = vec4(2.0, 3.0, 5.0, 1.0); //We put camera in corner in order to make the isometric view
 	eyePos = mult(rotateY(time * 2), eyePos);
@@ -304,8 +134,8 @@ function render()
 	{// draw coordinat system
 		trsMatrix = mat4();
 		gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
-		send_array_to_buffer("vertexPos", coordinateSys.points, 3, gl, program);
-		send_array_to_buffer("vColor", coordinateSys.colors, 4, gl, program);
+		send_array_to_attribute_buffer("vertexPos", coordinateSys.points, 3, gl, program);
+		send_array_to_attribute_buffer("vColor", coordinateSys.colors, 4, gl, program);
 		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
 	}
 	let shinyness = document.getElementById('shine_slider').value;
@@ -313,8 +143,8 @@ function render()
 		trsMatrix = mat4();
 		gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
 		gl.uniform1f(uniforms.shinyness, shinyness);
-		send_array_to_buffer("vertexPos", sphere1.Points, 4, gl, program);
-		send_array_to_buffer("vColor", sphere1.Colors, 4, gl, program);
+		send_array_to_attribute_buffer("vertexPos", sphere1.Points, 4, gl, program);
+		send_array_to_attribute_buffer("vColor", sphere1.Colors, 4, gl, program);
 		gl.drawArrays(gl.TRIANGLES, 0, sphere1.Points.length);
 	}
 
