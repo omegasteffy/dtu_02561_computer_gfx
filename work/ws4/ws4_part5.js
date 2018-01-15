@@ -15,7 +15,7 @@ function setup_stuff()
 	//general boiler plate stuff
 	let canvas = document.getElementById('draw_area');
 	gl = WebGLUtils.setupWebGL(canvas);
-	program = initShaders(gl, "vert1", "frag1");
+	program = initShaders(gl, "vert", "frag");
 	gl.useProgram(program);
 	uniforms = cacheUniformLocations(gl, program);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
@@ -56,7 +56,7 @@ function render()
 	gl.uniformMatrix4fv(uniforms.proj_Matrix, false, flatten(perMatrix));
 	gl.uniformMatrix4fv(uniforms.camera_Matrix, false, flatten(cameraMatrix));
 
-	let lightDirection = vec4(0, 0, 1, 0);
+	let lightDirection = vec4(0, 0, -1, 0);
 	//let lightPos = vec4(1, 1, 4, 0); // only used if we use directional coordinates
 	//gl.uniform4fv(uniforms.lightPos, flatten(lightPos));
 	let is_white_selected = document.getElementById("colorscheme_white").checked;
@@ -70,7 +70,13 @@ function render()
 		var specularColor = vec4(0.8, 0.1, 0.1, 1.0);
 	}
 	let ambientColor = vec4(0.25, 0.25, 0.25, 1.0); //always
-	
+	let use_halfway_vector = document.getElementById("reflect_model_h").checked;
+	if(use_halfway_vector)
+	{
+		gl.uniform1i(uniforms.use_halfway_vector, 1);
+	}else{
+		gl.uniform1i(uniforms.use_halfway_vector, 0);
+	}
 	
 	
 	
@@ -100,8 +106,8 @@ function render()
 	{// draw coordinat system
 		trsMatrix = mat4();
 		gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
-		send_array_to_attribute_buffer("vertexPos", coordinateSys.points, 3, gl, program);
-		send_array_to_attribute_buffer("vColor", coordinateSys.colors, 4, gl, program);
+		send_array_to_attribute_buffer("a_Position", coordinateSys.points, 3, gl, program);
+	//	send_array_to_attribute_buffer("vColor", coordinateSys.colors, 4, gl, program);
 		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
 	}
 	let shinyness = document.getElementById('shine_slider').value;
@@ -109,8 +115,8 @@ function render()
 		trsMatrix = mat4();
 		gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
 		gl.uniform1f(uniforms.shinyness, shinyness);
-		send_array_to_attribute_buffer("vertexPos", sphere1.Points, 4, gl, program);
-		send_array_to_attribute_buffer("vColor", sphere1.Colors, 4, gl, program);
+		send_array_to_attribute_buffer("a_Position", sphere1.Points, 4, gl, program);
+		send_array_to_attribute_buffer("a_Normal", sphere1.Normals, 4, gl, program);
 		gl.drawArrays(gl.TRIANGLES, 0, sphere1.Points.length);
 	}
 
