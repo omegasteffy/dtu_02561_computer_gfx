@@ -1,32 +1,39 @@
 /**
  * Global variables
  */
-let cubeSpec; //Specification of the cube containing the vertices
+let sphere; //Specification of the cube containing the vertices
 let coordinateSys;
 let gl;		  //the GL context
 let program;  // the compiled GL-program
-let moveCube; //matrix for positioning the cube
+let cameraMatrix;
 
-const gl_drawtype = { "LINES": 0, "TRIANGLES": 1 };
-
+function init()
+{
+	
+	console.log("setup event handler");
+	setup_stuff();
+	document.getElementById("subdivision_slider").onchange = render;
+	document.getElementById("depth_test").onchange = render
+	document.getElementById("cull_test").onchange = render
+	requestAnimationFrame(render); 
+	
+}
 function setup_stuff() {
-	console.trace("Started");
 
 	//general boiler plate stuff
 	let canvas = document.getElementById('draw_area');
 	gl = WebGLUtils.setupWebGL(canvas);
-	program = initShaders(gl, "vert1", "frag1");
+	program = initShaders(gl, "vert", "frag");
 	gl.useProgram(program);
 	uniforms = cacheUniformLocations(gl, program);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	coordinateSys = coordinateSystem(gl);
 
-	let eye = vec3(1.0, 3.0, 5.0); //We put camera in corner in order to make the isometric view
-	let upVec = vec3(0.0, 1.0, 0.0);//we just need the orientation... it will adjust itself
-	let cameraTarget = vec3(0.0, 0.0, 0.0);// for isometric we should look at origo
+	let eye = vec3(1.0, 4.0, 3.0); //We put camera in corner in order to make the isometric view
+	let upVec = vec3(0.1, 1.0, 0.0);//we just need the orientation... it will adjust itself
+	let cameraTarget = vec3(0.22, 1.1, 1.0);// for isometric we should look at origo
 
 	cameraMatrix = lookAt(eye, cameraTarget, upVec);
 
@@ -36,14 +43,57 @@ function setup_stuff() {
 	let far = 100.0;
 	let perMatrix = perspective(FieldOfViewY, AspectRatio, near, far);
 
-	gl.enable(gl.DEPTH_TEST);
-	gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
+	//gl.enable(gl.DEPTH_TEST);
+	//gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
 	let proj_transform_Matrix = mult(perMatrix, cameraMatrix);
 	gl.uniformMatrix4fv(uniforms.proj_transform_Matrix, false, flatten(proj_transform_Matrix));
 	
+}
+init();
 
-	let sphere = sphere_3d(4);
+function render()
+{
+	const enable_depth_test=document.getElementById("depth_test").checked;
+	const enable_cull_test=document.getElementById("cull_test").checked;
+	if(enable_depth_test)
+	{
+		gl.enable(gl.DEPTH_TEST);
+	}else
+	{
+			gl.disable(gl.DEPTH_TEST);
+	}
+	if(enable_cull_test)
+	{
+		gl.enable(gl.CULL_FACE);
+	}else
+	{
+			gl.disable(gl.CULL_FACE);
+	}
+	const avoid_crashing=true;
+	if(avoid_crashing)
+	{
+		//For some reason i have to perform some vector operation, otherwise sphere_3d() crash after >20 calls
+		let hat = vec4(2.0, 1.0, 3.0, 1.0); 
+		hat = vec3(hat[0], hat[1], hat[2]);
+		let hat2 = vec3(0.0, 1.0, 0.0);
+		let hat3 = vec3(0.22, 0.1, 0.0);
+		let crap  = lookAt(hat, hat2, hat3);
+	}
+	let num_divisions = document.getElementById('subdivision_slider').value;
+	sphere = sphere_3d(num_divisions);
+	console.log("create cube of "+num_divisions+ " divisions" );
+	
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	
+	{// draw coordinat system
+		trsMatrix = mat4();
+		gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
+		send_array_to_attribute_buffer("vPosition", coordinateSys.points, 3, gl, program);
+		send_array_to_attribute_buffer("vColor", coordinateSys.colors, 4, gl, program);
+		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
+	}
+
 	{//The sphere
 		trsMatrix = mat4();//rotateX(Math.random() * 45);
 		gl.uniformMatrix4fv(uniforms.trsMatrix, false, flatten(trsMatrix));
@@ -52,13 +102,5 @@ function setup_stuff() {
 		gl.drawArrays(gl.TRIANGLES, 0, sphere.drawCount);
 	}
 
-	requestAnimationFrame(render); 
-}
-setup_stuff();
-
-function render()
-{
-
-
-	//requestAnimationFrame(render); 
+//	requestAnimationFrame(render); //we only have to do this for each change of the slider
 }

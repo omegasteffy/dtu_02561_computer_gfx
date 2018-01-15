@@ -1,8 +1,8 @@
 <html>
-	<title>Something something</title>
+	<title>Worksheet 4 - Part 1</title>
 
 
-    <script id="vert1" type="x-shader/x-vertex" >
+    <script id="vert" type="x-shader/x-vertex" >
 	    attribute vec4 vPosition;
         uniform mat4 trsMatrix;
         uniform mat4 proj_transform_Matrix;
@@ -14,7 +14,7 @@
             v_color = vColor;
 	    }
     </script>
-    <script id="frag1" type="x-shader/x-fragment" >
+    <script id="frag" type="x-shader/x-fragment" >
 	    precision mediump float;
         varying vec4 v_color;
 	    void main()
@@ -23,11 +23,47 @@
 	    }
     </script>
 <body>
+    <h1>Worksheet 4 - Part 1</h1>
+    <div>
+        There is created a sphere_3d function in ../other_common/shapes.js It is more or less copy paste from Angels example.<br/>
+        Every time you change the slider, the sphere is drawn again.<br>
+        Notice that the lack of depth test and cull make the sphere look wierd.<br>
+        I have experience that MV.js sometimes throw an expection 'Uncaught normalize: vector 0,-0.471405,-0.33 has zero length'<br>
+        You can provoke it by moving the slider.<br>
+        The workaround is to perform some seemingly unrelated calls to MV.js, i expect some static 'var' to be the cause.<br/>
+        
+    </div>
+<table>
+    <thead>
+        <tr>
+            <td> Triangle -> Sphere subdivisions</td>
+            <td><input type="range" min="0" max="5" id="subdivision_slider"></td>
+            <td id="subdivision_value"></td>
+        </tr>
+        <tr>
+            <td> Avoid crashing</td>
+            <td><input type="checkbox" id="avoid_crash"></td>
+            </tr>
+        </thead>
+    </table>
+    <script> 
+        function link_input_and_text(input_id, value_id, initial_value)
+        {
+            document.getElementById(input_id).oninput = function ()
+            {
+                document.getElementById(value_id).innerHTML = document.getElementById(input_id).value;
+            };
+            document.getElementById(value_id).innerHTML = initial_value;
+            document.getElementById(input_id).value = initial_value;
+        }
+        link_input_and_text("subdivision_slider", "subdivision_value", 2);
+    </script> 
 	<canvas id='draw_area' height="512" width="512" />
     <script src="../angel_common/initShaders.js"></script>
     <script src="../angel_common/webgl-utils.js"></script>
     <script src="../angel_common/MV.js"></script>
     <script src="../other_common/helpers.js"></script>
+    <script src="../other_common/shapes.js"></script>
     <script src="ws4_part1.js"></script>
 </body>
 

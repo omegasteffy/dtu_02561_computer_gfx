@@ -1,8 +1,8 @@
 <html>
-	<title>Something something</title>
+	<title>Worksheet 4 - Part 2</title>
 
 
-    <script id="vert1" type="x-shader/x-vertex" >
+    <script id="vert" type="x-shader/x-vertex" >
 	    attribute vec4 vPosition;
         uniform mat4 trsMatrix;
         uniform mat4 proj_transform_Matrix;
@@ -14,7 +14,7 @@
             v_color = vColor;
 	    }
     </script>
-    <script id="frag1" type="x-shader/x-fragment" >
+    <script id="frag" type="x-shader/x-fragment" >
 	    precision mediump float;
         varying vec4 v_color;
 	    void main()
@@ -23,6 +23,41 @@
 	    }
     </script>
 <body>
+    <h1>Worksheet 4 - Part 2</h1>
+    <div>
+        Notice that the lack of depth test and cull make the sphere look wierd.<br>
+        Depth test ensure we do not draw triangles not visible<br>
+        Cull ensure we only draw surfaces facing toward the camera (determined as a dot-product)
+    </div>
+<table>
+    <thead>
+        <tr>
+            <td> Triangle -> Sphere subdivisions</td>
+            <td><input type="range" min="0" max="5" id="subdivision_slider"></td>
+            <td id="subdivision_value"></td>
+        </tr>
+        <tr>
+            <td> Depth test</td>
+            <td><input type="checkbox" id="depth_test" checked></td>
+        </tr>
+        <tr>
+            <td> Cull</td>
+                <td><input type="checkbox" id="cull_test" checked></td>
+        </tr>
+        </thead>
+    </table>
+    <script> 
+        function link_input_and_text(input_id, value_id, initial_value)
+        {
+            document.getElementById(input_id).oninput = function ()
+            {
+                document.getElementById(value_id).innerHTML = document.getElementById(input_id).value;
+            };
+            document.getElementById(value_id).innerHTML = initial_value;
+            document.getElementById(input_id).value = initial_value;
+        }
+        link_input_and_text("subdivision_slider", "subdivision_value", 2);
+    </script> 
 	<canvas id='draw_area' height="512" width="512" />
     <script src="../angel_common/initShaders.js"></script>
     <script src="../angel_common/webgl-utils.js"></script>
