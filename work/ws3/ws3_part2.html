@@ -6,14 +6,14 @@
         attribute vec4 a_Position;
         attribute vec4 a_Color;
 
-        uniform mat4 moveMatrix;
+        uniform mat4 trsMatrix;
         uniform mat4 cameraMatrix;
         uniform mat4 projMatrix;
 
         varying vec4 v_color;
 	    void main()
 	    {
-		    gl_Position = projMatrix* cameraMatrix * moveMatrix*a_Position;
+		    gl_Position = projMatrix* cameraMatrix * trsMatrix*a_Position;
             v_color = a_Color; //we just forward the color to the fragment shader
 	    }
     </script>
@@ -25,7 +25,14 @@
 		    gl_FragColor = v_color;
 	    }
     </script>
-<body>
+<body>      
+      <h1>Worksheet 3 - Part 2</h1>
+    <div>
+        The different 1/2/3-point perspectives simply depend upon the angle you inspect it from.<br>
+        1-point perspective is seen in the center, all depth-lines point toward the center.<br>
+        2-point perspective is seen to the right, lines propagate toward two different positions (left + right).<br>
+        3-point perspective is seen in the left. This is the general case. Lines can be said to disappear toward 3 different point<br>
+    </div>
 	<canvas id='draw_area' height="512" width="512" />
     <script src="../angel_common/initShaders.js"></script>
     <script src="../angel_common/webgl-utils.js"></script>
