@@ -1,0 +1,160 @@
+<html>
+<head>
+</head>
+	<title>Worksheet 4 - Part 4</title>
+<h1>Worksheet 4 - Part 4</h1>
+<div>We have now implemented the full phong reflection model in the vertex shader (fragment shader still only perform interpolation)<br/>
+All contributions of the light can be adjusted.<br>
+Further more there is added an option to let diffuse to be blue and the specular be red (good for debugging)<br>
+Additionally it was chosen to let the user choose between the cheap Half-way vector approximation and the true reflection.<br>
+Calculating specular light in the vertex shader do really not work well. Specular highlight are small and can not be reproduced by only samling at a few vertices (although higher vertice count helps).<br>
+Comparing the true reflection vector with the half-way vector, it seems that the half-way vector is less sharp (and that actually looks better in this case)
+<a href="http://sunandblackcat.com/tipFullView.php?l=eng&amp;topicid=30&amp;topic=Phong-Lighting">Link a guide that i find to provide good overview of light models and vectors</a>
+<div id="slidecontainer">
+    <table>
+        <thead>
+            <tr>
+                <td> Triangle -> Sphere subdivisions</td>
+                <td><input type="range" min="0" max="5" id="subdivision_slider"></td>
+                <td id="subdivision_value"></td>
+            </tr>
+            <tr>
+                <td> Shininess</td>
+                <td><input type="range" min="1" max="40" id="shine_slider"></td>
+                <td id="shine_value"></td>
+            </tr>
+            <tr>
+                <td>Ambient light coefficient [%]</td>
+                <td><input type="range" min="1" max="100" id="ambientlight_slider"></td>
+                <td id="ambientlight_value"></td>
+            </tr>
+            <tr>
+                <td>Diffuse light coefficient [%]</td>
+                <td><input type="range" min="1" max="100" id="diffuselight_slider"></td>
+                <td id="diffuselight_value"></td>
+            </tr>
+            <tr>
+                <td>Specular light coefficient [%]</td>
+                <td><input type="range" min="1" max="100" id="specularlight_slider"></td>
+                <td id="specularlight_value"></td>
+            </tr>
+        <tr>
+            <td>Colorscheme</td>
+            <td>
+                <input id="colorscheme_white" type="radio" name="colorscheme" value="white" checked> White
+                <input type="radio" name="colorscheme" value="different">Blue/Red
+            </td>
+        </tr>
+        <tr>
+            <td>Light calc model</td>
+            <td>
+                <input type="radio" name="lightmodel" value="phong_reflect" checked> Phong reflection<br>
+            </td>
+        </tr>
+
+            <tr>
+            <td>Reflection calculate</td>
+            <td>
+                <input type="radio" name="reflect_model" value="R" > R - True Reflection<br>
+                <input type="radio" name="reflect_model" id="reflect_model_h" value="H" checked > H - Simplified half-way vector<br>
+            </td>
+        </tr>
+    </table>
+</div>
+<script> 
+    function link_input_and_text(input_id, value_id, initial_value)
+    {
+        document.getElementById(input_id).oninput = function ()
+        {
+            document.getElementById(value_id).innerHTML = document.getElementById(input_id).value;
+        };
+        document.getElementById(value_id).innerHTML = initial_value;
+        document.getElementById(input_id).value = initial_value;
+    }
+    link_input_and_text("subdivision_slider", "subdivision_value", 3);
+    link_input_and_text("shine_slider", "shine_value", 4);
+    link_input_and_text("specularlight_slider", "specularlight_value", 50);
+    link_input_and_text("ambientlight_slider", "ambientlight_value", 10);
+    link_input_and_text("diffuselight_slider", "diffuselight_value",50);
+    
+    
+    </script>
+
+    <script id="vert" type="x-shader/x-vertex" >
+        attribute vec4 a_Position;
+        attribute vec4 a_Normal;
+
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_Matrix;
+        uniform mat4 camera_Matrix;
+        varying vec4 v_Color;
+
+        uniform vec4 lightDirection;
+        uniform vec4 specularColor;
+        uniform vec4 diffuseColor;
+        uniform vec4 ambientColor;
+        uniform float shinyness;
+        uniform float specular_coef;
+        uniform float ambient_coef;
+        uniform float diffuse_coef;
+        uniform bool use_halfway_vector;
+	    void main()
+	    {
+            vec4 normal = a_Normal; // only valid because it is a sphere
+            normal.w = 0.0; // otherwise it will not work!
+
+            vec3 vertexPos_cameraSpace = (camera_Matrix*trsMatrix*a_Position).xyz;
+            //vec3 lightPos_cameraSpace = (camera_Matrix*lightPos).xyz;
+            //L = normalize( light - vertex_cameraSpace ); //light from a position
+
+            vec3 L = -normalize( camera_Matrix * lightDirection ).xyz; //vector toward the light (i.e. -lightDirection) light from a distant (only direction)
+            vec3 E = -normalize(vertexPos_cameraSpace); //away from the vertex toward origo ... since Eye is a origo in cameraspace
+            vec3 N = normalize((camera_Matrix*trsMatrix*normal).xyz); //normalized normal vector
+            
+            //calculation of diffuse light intensity is simply the dot-product
+            float Kd = clamp(dot(L,N),0.0,1.0); // must range between 0 and 1
+            vec4  diffuse = Kd * diffuseColor;
+
+            float Ks=0.0;
+            if(use_halfway_vector)
+            {
+                vec3  H = normalize(L+E);
+                Ks = pow( clamp(dot(N,H),0.0,1.0) , shinyness);
+            }else
+            {
+                vec3  R = -reflect(L,N); //Something is wrong i should not have to flip the sign!
+                Ks = pow( clamp(dot(E,R),0.0,1.0) , shinyness);
+            }
+            
+            vec4  specular = Ks* specularColor;
+            
+            if( dot(L,N) < 0.0 )
+            {
+               specular  = vec4(0.0 , 0.0 , 0.0 , 1.0);
+            }
+            v_Color = (ambientColor*ambient_coef) +diffuse*diffuse_coef + specular*specular_coef;
+		    gl_Position = proj_Matrix* camera_Matrix*trsMatrix *a_Position;
+
+	    }
+    </script>
+    <script id="frag" type="x-shader/x-fragment" >
+	    precision mediump float;
+
+        varying vec4 v_Color;
+
+	    void main()
+	    {
+            gl_FragColor = v_Color;
+            gl_FragColor.a=1.0;//just to make sure
+	    }
+    </script>
+<body>
+	<canvas id='draw_area' height="512" width="512" />
+    <script src="../angel_common/initShaders.js"></script>
+    <script src="../angel_common/webgl-utils.js"></script>
+    <script src="../angel_common/MV.js"></script>
+    <script src="../other_common/helpers.js"></script>
+    <script src="../other_common/shapes.js"></script>
+    <script src="ws4_part4.js"></script>
+</body>
+</html>
