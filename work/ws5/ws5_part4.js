@@ -73,7 +73,7 @@ function init_stuff() {
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
 	g_objLoader = new OBJLoadingHelper();
-	g_objLoader.beginReadingObjFromUrl('../models/shark.obj', 1.0, true);
+	g_objLoader.beginReadingObjFromUrl('../models/Shark.obj', 1.0, true);
 	time = 0.0;
 	console.trace("Finished Init");
 	render();
