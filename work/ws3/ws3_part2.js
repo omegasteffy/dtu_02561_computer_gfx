@@ -40,20 +40,6 @@ function quad_to_indicies(drawtype, a, b, c, d)
 	}
 }
 
-const CommonColors = {
-	"black": vec4(0.0, 0.0, 0.0, 1.0),
-	"red": vec4(1.0, 0.0, 0.0, 1.0),
-	"green": vec4(0.0, 1.0, 0.0, 1.0),
-	"blue":  vec4(0.0, 0.0, 1.0, 1.0),
-	"yellow":vec4(1.0, 1.0, 0.0, 1.0),
-	"pink":  vec4(1.0, 0.0, 0.5, 1.0),
-	"magenta": vec4(1.0, 0.0, 1.0, 1.0),
-	"orange": vec4(1.0, 0.62, 1.0, 1.0),
-	"lime":  vec4(.84, 0.99, 0.0, 1.0),
-	"brown": vec4(0.7, 0.25, .06, 1.0),
-	"light_blue_clearing_color": vec4(0.3921, 0.5843, 0.9294, .10)
-};
-
 function random_color() { return vec4(0.2 + 0.6 * Math.random(), 0.2 + 0.6 * Math.random(), 0.2 + 0.6 * Math.random(), 1.0);}
 
 /**
@@ -127,53 +113,13 @@ function cube(gl, drawtype)
 	return x;
 }
 
-/**
- * draw x,y,z direction
- */
-function coordinateSystem(gl)
-{
-	let x = {};
-	x.points = []
-	x.colors = []
-
-	x.points = [vec3(0, 0, 0), vec3(100, 0, 0),
-		vec3(0, 0, 0), vec3( 0, 100, 0),
-		vec3(0, 0, 0),vec3(0,0,100)
-	]
-	x.colors = [mix(CommonColors.black, CommonColors.red, 0.6), mix(CommonColors.black, CommonColors.red, 0.6),
-		mix(CommonColors.black, CommonColors.green, 0.6), mix(CommonColors.black, CommonColors.green, 0.6),
-		mix(CommonColors.black, CommonColors.blue, 0.6),mix(CommonColors.black, CommonColors.blue, 0.6)
-	]
-
-	x.drawtype = gl.LINES;
-	x.drawCount = x.points.length;
-	return x;
-}
-function send_array_to_buffer(buffername, input_data, data_dimension, gl, program) {
-	let buffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, buffer); // make it the current buffer assigned in WebGL
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(input_data), gl.STATIC_DRAW);//link the JS-points and the 
-	let attribLocation = gl.getAttribLocation(program, buffername); // setup a pointer to match the 
-	gl.vertexAttribPointer(attribLocation, data_dimension, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(attribLocation);
-}
-function cacheUniformLocations(gl, program) {
-	const activeUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-	const uniformLocations = {};
-	for (let i = 0; i < activeUniforms; i++) {
-		const info = gl.getActiveUniform(program, i);
-		uniformLocations[info.name] = gl.getUniformLocation(program, info.name);
-	}
-	return uniformLocations;
-}
-
 function setup_stuff() {
 	console.trace("Started");
 
 	//general boiler plate stuff
 	let canvas = document.getElementById('draw_area');
 	gl = WebGLUtils.setupWebGL(canvas);
-	program = initShaders(gl, "vert1", "frag1");
+	program = initShaders(gl, "vert", "frag");
 	gl.useProgram(program);
 	uniforms = cacheUniformLocations(gl, program);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
@@ -200,30 +146,30 @@ function setup_stuff() {
 	gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
 	gl.uniformMatrix4fv(uniforms.moveMatrix, false, flatten(moveCube));
-	gl.uniformMatrix4fv(uniforms.camMatrix, false, flatten(cameraMatrix));
-	gl.uniformMatrix4fv(uniforms.pMatrix, false, flatten(perMatrix));
+	gl.uniformMatrix4fv(uniforms.cameraMatrix, false, flatten(cameraMatrix));
+	gl.uniformMatrix4fv(uniforms.projMatrix, false, flatten(perMatrix));
 
 	gl.clear(gl.COLOR_BUFFER_BIT);
 
 	{
 		moveCube = mat4(); //no translate applied 
-		send_array_to_buffer("vPosition", coordinateSys.points, 3, gl, program);
-		send_array_to_buffer("vColor", coordinateSys.colors, 4, gl, program);
+		send_array_to_attribute_buffer("a_Position", coordinateSys.points, 3, gl, program);
+		send_array_to_attribute_buffer("a_Color", coordinateSys.colors, 4, gl, program);
 		gl.drawArrays(coordinateSys.drawtype, 0, coordinateSys.drawCount);
 	}
 
 	{// 1 point perspective have to be centered
 		moveCube = translate(0.0, 0.0, .00);
 		gl.uniformMatrix4fv(uniforms.moveMatrix, false, flatten(moveCube));
-		send_array_to_buffer("vPosition", cubeSpec.points, 3, gl, program);
-		send_array_to_buffer("vColor", cubeSpec.colors, 4, gl, program);
+		send_array_to_attribute_buffer("a_Position", cubeSpec.points, 3, gl, program);
+		send_array_to_attribute_buffer("a_Color", cubeSpec.colors, 4, gl, program);
 		gl.drawArrays(cubeSpec.drawtype, 0, cubeSpec.drawCount);
 	}
 	{// 2 point perspective is just moved to the right
 		moveCube = translate(1.5, 0.0, .00);
 		gl.uniformMatrix4fv(uniforms.moveMatrix, false, flatten(moveCube));
-		send_array_to_buffer("vPosition", cubeSpec.points, 3, gl, program);
-		send_array_to_buffer("vColor", cubeSpec.colors, 4, gl, program);
+		send_array_to_attribute_buffer("a_Position", cubeSpec.points, 3, gl, program);
+		send_array_to_attribute_buffer("a_Color", cubeSpec.colors, 4, gl, program);
 		gl.drawArrays(cubeSpec.drawtype, 0, cubeSpec.drawCount);
 	}
 
@@ -232,8 +178,8 @@ function setup_stuff() {
 		let rotateMat = mult(rotateX(-30), rotateY(30));
 		moveCube = mult(moveCube, rotateMat );
 		gl.uniformMatrix4fv(uniforms.moveMatrix, false, flatten(moveCube));
-		send_array_to_buffer("vPosition", cubeSpec.points, 3, gl, program);
-		send_array_to_buffer("vColor", cubeSpec.colors, 4, gl, program);
+		send_array_to_attribute_buffer("a_Position", cubeSpec.points, 3, gl, program);
+		send_array_to_attribute_buffer("a_Color", cubeSpec.colors, 4, gl, program);
 		gl.drawArrays(cubeSpec.drawtype, 0, cubeSpec.drawCount);
 	}
 
@@ -244,6 +190,5 @@ setup_stuff();
 function render()
 {
 
-
-	//requestAnimationFrame(render); 
+ //for a static image
 }

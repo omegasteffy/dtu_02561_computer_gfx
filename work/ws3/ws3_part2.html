@@ -1,22 +1,23 @@
 <html>
-	<title>Something something</title>
+	<title>Worksheet 3 - Part 2</title>
 
 
-    <script id="vert1" type="x-shader/x-vertex" >
-	    attribute vec4 vPosition;
+    <script id="vert" type="x-shader/x-vertex" >
+        attribute vec4 a_Position;
+        attribute vec4 a_Color;
+
         uniform mat4 moveMatrix;
-        uniform mat4 camMatrix;
-        uniform mat4 pMatrix;
-        attribute vec4 vColor;
+        uniform mat4 cameraMatrix;
+        uniform mat4 projMatrix;
+
         varying vec4 v_color;
 	    void main()
 	    {
-		    gl_Position = pMatrix* camMatrix * moveMatrix*vPosition;
-           // gl_Position.z =gl_Position.z*0.6; //Use in case lines or triangles disapear due to clipping in z-direction
-            v_color = vColor; //we just forward the color to the fragment shader
+		    gl_Position = projMatrix* cameraMatrix * moveMatrix*a_Position;
+            v_color = a_Color; //we just forward the color to the fragment shader
 	    }
     </script>
-    <script id="frag1" type="x-shader/x-fragment" >
+    <script id="frag" type="x-shader/x-fragment" >
 	    precision mediump float;
         varying vec4 v_color;
 	    void main()
@@ -29,6 +30,7 @@
     <script src="../angel_common/initShaders.js"></script>
     <script src="../angel_common/webgl-utils.js"></script>
     <script src="../angel_common/MV.js"></script>
+    <script src="../other_common/helpers.js"></script>
     <script src="ws3_part2.js"></script>
 </body>
 
