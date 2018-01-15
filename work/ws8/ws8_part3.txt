@@ -1,0 +1,19 @@
+﻿title: Worksheet 8 - Part 3
+q: Compare projection shadows to shadow mapping by listing advantages and disadvantages of the two techniques
+
+ -= ShadowProjection =-
++ Provide an efficient/cheap way of simulating shadows
++ Looks good when performed with alpha blending
+% Not easy to apply to other surfaces than a plane
+% Must be performed for all object in the scene
+% Do not include self-shadowing
+% It is hard to find proper documentation the transformation perform the projection (only found the explanation in Angels book and although the overall idea is clear, the implementation matrix is not explaned)
+
+-= Shadow Mapping =-
++ Conceptually easy to understand (current depth, must match the pre-rendered image)
++ Include self-shadowing
++ General purpose
+% Requires additional rendering + buffer sampling
+% Difficult to make look good at edges (requires higher precision)
+% Artifacts can arise if the inner part of a surfaces is lid by light
+% The Field of view for the light source must be considered ( i noticed some shadows on my surface because my light source was moving/look a bit different than desired)
