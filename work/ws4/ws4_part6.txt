@@ -1,4 +1,7 @@
-Part6)
+   --==========================--
+   --== Worksheet 4 - Part 6 ==--
+   --==========================--
+
 a) What is the difference between Phong shading and Phong lighting
 In the context of this excercise the difference is whether the light is calculated "per vertex" or "per fragment/pixel"
 
