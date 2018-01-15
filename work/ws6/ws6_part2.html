@@ -28,7 +28,16 @@
 	    }
     </script>
 <body>
-    <a href="https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glTexParameter.xml">Explanation of filters</a>
+        <h1>Worksheet 6 - Part 2</h1>
+    <div>Compared to previous part we have added all mini and maxification filters<br>
+        <a href="https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glTexParameter.xml">Explanation of filters</a>
+        <b>Minification</b><br>
+    MipMaps provided downsampled version of the textures, which can be crusual to avoid aliasing (as seen in the distance).<br>
+    Linear interpolation is known for being more expensive compared to pre-calculated mipmaps.  LinearMipMap-Nearest looks pretty good and is cheap.<br>
+    <b>Magnification</b>
+    For a checkerboard the linear interpolation looks horribly soft, however for e.g. animated characters, this can help alot with avoiding large pixels of low-resolution textures.
+    <br><b>Note</b> One of my main issues with this image is the border between mini and mag-filters.
+    </div>
     <table>
     <tr>
         <td>MinimizeFilter</td>
