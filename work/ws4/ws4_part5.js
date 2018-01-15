@@ -8,40 +8,6 @@ let moveCube; //matrix for positioning the cube
 let sphere1;
 let time = 0;
 
-const gl_drawtype = { "LINES": 0, "TRIANGLES": 1 };
-/**
- * Will give triangle indecies from the input corner indecies
- * @param {any} a
- * @param {any} b
- * @param {any} c
- * @param {any} d
- */
-function quad_to_triangle_indicies(a, b, c, d)
-{
-	return [a,b,c,a,c,d];
-}
-/**
- * Will give triangle indecies from the input corner indecies
- * @param {any} a
- * @param {any} b
- * @param {any} c
- * @param {any} d
- */
-function quad_to_line_indicies(a, b, c, d) {
-	return [a, b, b, c, c, d,d,a];
-}
-
-function quad_to_indicies(drawtype, a, b, c, d)
-{
-	switch (drawtype)
-	{
-		case gl_drawtype.LINES: return quad_to_line_indicies(a, b, c, d);
-		case gl_drawtype.TRIANGLES: return quad_to_triangle_indicies(a, b, c, d);
-		default: throw ("Not supported");
-	}
-}
-
-
 function setup_stuff()
 {
 	console.trace("Started");
