@@ -1,6 +1,7 @@
 Part6)
 a) What is the difference between Phong shading and Phong lighting
-The question was kind of tricky to answer because there are plenty of explanations of both, but seldome as contradictions.
+In the context of this excercise the difference is whether the light is calculated "per vertex" or "per fragment/pixel"
+
 Phong lightning refers to the model og how reflections can be calculated, based upon a set of vectors.
 Phong shading is the actual implementation. The geometry have been turned into a finite set of vertex's and normal vectors.
 Phong shading are noteworthy for improving implementation results by interpolating normal vector per fragment.
@@ -40,5 +41,5 @@ When shinyness is large there is only a small spot representing the highlight.
 Do not use a shinyness of less than 1.
 
 g) In what coordinate space did you compute the lighting?
-The vectors for lightning must be transformed into camera/eye-space.
+Eye/Camera-camera space (all the used vectors are transformed into this space)
 Hereby the eye vector simply become the negative of vertex-position.
