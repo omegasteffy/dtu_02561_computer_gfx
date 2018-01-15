@@ -40,45 +40,6 @@ function quad_to_indicies(drawtype, a, b, c, d)
 }
 
 /**
- * OBSOLETE
- * Gives a vec4-color specification of the color requested
- * In case the color is not found a random one is generated
- *
- * @param {string} color_name 
- * @returns vec4 color
- */
-function get_color(color_name)
-{
-	let color_str_lower = color_name.toLowerCase();
-	switch (color_str_lower)
-	{
-		case "red":    return vec4(1.0, 0.0, 0.0, 1.0);
-		case "green":  return vec4(0.0, 1.0, 0.0, 1.0);
-		case "blue":   return vec4(0.0, 0.0, 1.0, 1.0);
-		case "yellow": return vec4(1.0, 1.0, 0.0, 1.0);
-		case "pink":   return vec4(1.0, 0.0, 0.5, 1.0);
-		case "magenta": return vec4(1.0, 0.0, 1.0, 1.0);
-		case "orange": return vec4(1.0, 0.62, 1.0, 1.0);
-		case "lime": return vec4(.84, 0.99, 0.0, 1.0);
-		case "brown": return vec4(0.7, 0.25, .06, 1.0);
-	}
-
-	return vec4(0.2 + 0.6 * Math.random(), 0.2 + 0.6 * Math.random(), 0.2 + 0.6 * Math.random(), 1.0)
-
-}
-const CommonColors = {
-	"red": vec4(1.0, 0.0, 0.0, 1.0),
-	"green": vec4(0.0, 1.0, 0.0, 1.0),
-	"blue":  vec4(0.0, 0.0, 1.0, 1.0),
-	"yellow":vec4(1.0, 1.0, 0.0, 1.0),
-	"pink":  vec4(1.0, 0.0, 0.5, 1.0),
-	"magenta": vec4(1.0, 0.0, 1.0, 1.0),
-	"orange": vec4(1.0, 0.62, 1.0, 1.0),
-	"lime":  vec4(.84, 0.99, 0.0, 1.0),
-	"brown": vec4(0.7, 0.25, .06, 1.0),
-	"light_blue_clearing_color": vec4(0.3921, 0.5843, 0.9294, .10)
-};
-/**
  * Set the clearing color using color specified in vec4 input argument
  * @param {gl-context} gl
  * @param {vec4} clearing_color
@@ -167,10 +128,12 @@ function setup_stuff() {
 	//general boiler plate stuff
 	var canvas = document.getElementById('draw_area');
 	gl = WebGLUtils.setupWebGL(canvas);
-	program = initShaders(gl, "vert1", "frag1");
+	program = initShaders(gl, "vert", "frag");
 	gl.useProgram(program);
 	gl.viewport(0.0, 0.0, canvas.width, canvas.height)
 	gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
+	gl.clear(gl.COLOR_BUFFER_BIT);
+
 	projMatrix = mat4();
 
 	cubeSpec = cube(gl, gl_drawtype.LINES); //Hereby we have created a unit-size cube positioned in 
@@ -186,37 +149,15 @@ function setup_stuff() {
 	//gl.enable(gl.DEPTH_TEST);
 	gl.enable(gl.CULL_FACE); // Ensure the depth of lines and triangles matter, instead of the drawing order... but not required
 
-	let locMoveMat = gl.getUniformLocation(program, "moveMatrix");
-	gl.uniformMatrix4fv(locMoveMat,false, flatten(moveCube));
+	let uniforms = cacheUniformLocations(gl, program);
+	gl.uniformMatrix4fv(uniforms.moveMatrix,false, flatten(moveCube));
+	gl.uniformMatrix4fv(uniforms.cameraMatrix, false, flatten(cameraMatrix));
+	gl.uniformMatrix4fv(uniforms.projMatrix, false, flatten(projMatrix));
 
-	let locCamMat = gl.getUniformLocation(program, "camMatrix");
-	gl.uniformMatrix4fv(locCamMat, false, flatten(cameraMatrix));
+	send_floats_to_attribute_buffer("a_Position",flatten(cubeSpec.points),3,gl,program);
+	send_floats_to_attribute_buffer("a_Color",flatten(cubeSpec.colors),4,gl,program);
 
+	gl.drawArrays(cubeSpec.drawtype, 0, cubeSpec.drawCount);
 
-	let locProjMat = gl.getUniformLocation(program, "projMatrix");
-	gl.uniformMatrix4fv(locProjMat, false, flatten(projMatrix));
-
-	var point_buffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, point_buffer); // make it the current buffer assigned in WebGL
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(cubeSpec.points), gl.STATIC_DRAW);//link the JS-points and the 
-	let vPos = gl.getAttribLocation(program, "vPosition"); // setup a pointer to match the 
-	gl.vertexAttribPointer(vPos, 3, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(vPos);
-
-	var color_buffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer); // make it the current buffer assigned in WebGL
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(cubeSpec.colors), gl.STATIC_DRAW);//link the JS-points and the 
-	let vCol = gl.getAttribLocation(program, "vColor"); // setup a pointer to match the 
-	gl.vertexAttribPointer(vCol, 4, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(vCol);
-
-	requestAnimationFrame(render); 
 }
 setup_stuff();
-
-function render()
-{
-	gl.clear(gl.COLOR_BUFFER_BIT);
-	gl.drawArrays(cubeSpec.drawtype, 0, cubeSpec.drawCount);
-	//requestAnimationFrame(render); 
-}
