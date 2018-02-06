@@ -1,0 +1,180 @@
+<html>
+<head>
+</head>
+	<title>Worksheet 10 - Part 1</title>
+<h1>Worksheet 10 - Part 1</h1>
+<div id="slidecontainer">
+    <table>
+        <thead>
+            <tr>
+                <td> Triangle -> Sphere subdivisions</td>
+                <td><input type="range" min="0" max="5" id="subdivision_slider"></td>
+                <td id="subdivision_value"></td>
+            </tr>
+            <tr>
+                <td> Shinyness</td>
+                <td><input type="range" min="1" max="40" id="shine_slider"></td>
+                <td id="shine_value"></td>
+            </tr>
+            <tr>
+                <td>Ambient light coefficient [%]</td>
+                <td><input type="range" min="1" max="100" id="ambientlight_slider"></td>
+                <td id="ambientlight_value"></td>
+            </tr>
+            <tr>
+                <td>Diffuse light coefficient [%]</td>
+                <td><input type="range" min="1" max="100" id="diffuselight_slider"></td>
+                <td id="diffuselight_value"></td>
+            </tr>
+            <tr>
+                <td>Specular light coefficient [%]</td>
+                <td><input type="range" min="1" max="100" id="specularlight_slider"></td>
+                <td id="specularlight_value"></td>
+            </tr>
+        <tr>
+            <td>Colorscheme</td>
+            <td>
+                <input id="colorscheme_white" type="radio" name="colorscheme" value="white" checked> White
+                <input type="radio" name="colorscheme" value="different">Blue/Red
+            </td>
+        </tr>
+        <tr>
+            <td>Light calc model</td>
+            <td>
+                <input type="radio" name="lightmodel" value="gouraud" checked> Gouraud
+                <input id="lightmodel_phong"type="radio" name="lightmodel" value="phong"> Phong
+            </td>
+        </tr>
+        </table>
+    <table>
+        <tr>
+                <td>MinimizeFilter</td>
+                <td>
+                    <input type="radio" name="MinimizeFilter" value="Nearest" checked> Nearest | 
+                    <input type="radio" name="MinimizeFilter" value="Linear"> Linear | 
+                    <input type="radio" name="MinimizeFilter" value="NearestMipMap-Nearest"> NearestMipMap-Nearest | 
+                    <input type="radio" name="MinimizeFilter" value="NearestMipMap-Linear"> NearestMipMap-Linear | 
+                    <input type="radio" name="MinimizeFilter" value="LinearMipMap-Nearest"> LinearMipMap-Nearest | 
+                    <input type="radio" name="MinimizeFilter" value="LinearMipMap-Linear"> LinearMipMap-Linear | 
+                </td>
+            </tr>
+            
+            <tr>
+                    <td>MagnificationFilter</td>
+                    <td>
+                        <input type="radio" name="MaximizeFilter" value="Nearest" checked> Nearest | 
+                        <input type="radio" name="MaximizeFilter" value="Linear"> Linear | 
+                    </td>
+            </tr>
+    </table>
+</div>
+<script> 
+    function link_input_and_text(input_id, value_id, initial_value)
+    {
+        document.getElementById(input_id).oninput = function ()
+        {
+            document.getElementById(value_id).innerHTML = document.getElementById(input_id).value;
+        };
+        document.getElementById(value_id).innerHTML = initial_value;
+        document.getElementById(input_id).value = initial_value;
+    }
+    link_input_and_text("subdivision_slider", "subdivision_value", 4);
+    link_input_and_text("shine_slider", "shine_value", 25);
+    link_input_and_text("specularlight_slider", "specularlight_value", 50);
+    link_input_and_text("ambientlight_slider", "ambientlight_value", 30);
+    link_input_and_text("diffuselight_slider", "diffuselight_value",72);
+    
+    
+    </script>
+
+    <script id="vert1" type="x-shader/x-vertex" >
+	    attribute vec4 vertexPos;
+        uniform mat4 trsMatrix;
+        uniform mat4 proj_Matrix;
+        uniform mat4 camera_Matrix;
+        attribute vec4 vColor;
+        varying vec4 color_to_frag;
+        varying vec3 N,L,E;
+        varying vec3 normal_unmodified;
+        uniform vec4 lightPos;
+        uniform vec4 lightDirection;
+
+	    void main()
+	    {
+            vec4 vNormal = vertexPos; // only valid because it is a sphere
+            normal_unmodified = vertexPos.xyz;
+            vNormal.w = 0.0;
+            vec3 vertex_eyePos_pos = (camera_Matrix*trsMatrix*vertexPos).xyz;
+            vec3 light = (camera_Matrix*lightPos).xyz;
+            //L = normalize( light - vertex_eyePos_pos ); //light from a position
+            L = normalize( camera_Matrix*lightDirection ).xyz; //light from a distant (only direction)
+            E = -vertex_eyePos_pos; //away from the vertex toward origo
+            N = normalize((camera_Matrix*trsMatrix*vNormal).xyz); //normalized Normal vector
+		    gl_Position = proj_Matrix* camera_Matrix*trsMatrix *vertexPos;
+    
+            color_to_frag = vColor;
+	    }
+    </script>
+    <script id="frag1" type="x-shader/x-fragment" >
+	    precision mediump float;
+        #define M_PI 3.1415926535897932384626433832795
+        varying vec3 N,L,E;
+        uniform vec4 specularColor;
+        uniform vec4 diffuseColor;
+        uniform vec4 ambientColor;
+        uniform float shinyness;
+        uniform float specular_coef;
+        uniform float ambient_coef;
+        uniform float diffuse_coef;
+        uniform bool normalize_light_param;
+        varying vec3 normal_unmodified;
+        uniform samplerCube tex;
+        vec2 texel_coord;
+       
+	    void main()
+	    {
+        vec3 N_norm = N;
+        vec3 L_norm = L;
+        vec3 E_norm = E;
+
+        if(normalize_light_param)
+        {
+            N_norm=normalize(N);
+            L_norm=normalize(L);
+            E_norm=normalize(E);
+        }
+
+        vec4 globe_texel;
+        //calculation of diffuse light intensity is simply the dot-product
+        float Kd = max(dot(L_norm,N_norm),0.0); // but never negative
+        texel_coord.t = acos(normal_unmodified.y)/M_PI;
+        texel_coord.s= (atan(normal_unmodified.x,normal_unmodified.z)+M_PI)/(M_PI+M_PI);
+        globe_texel = textureCube(tex,N);
+        vec4  diffuse = Kd *diffuseColor*globe_texel;
+
+        //calculation of specular light is 
+        vec3  H = normalize(L_norm+E_norm);
+        float Ks = pow( max(dot(N_norm,H),0.0) , shinyness);
+        vec4  specular = Ks* specularColor;
+        
+        if( dot(L_norm,N_norm) < 0.0 )
+        {
+            specular  = vec4(0.0 , 0.0 , 0.0 , 1.0);
+        }
+
+
+        gl_FragColor = (globe_texel*ambient_coef) +diffuse*diffuse_coef + specular*specular_coef;
+        gl_FragColor.a = 1.0;
+            
+	    }
+    </script>
+<body>
+	<canvas id='draw_area' height="512" width="512" />
+    <script src="../angel_common/initShaders.js"></script>
+    <script src="../angel_common/webgl-utils.js"></script>
+    <script src="../angel_common/MV.js"></script>
+    <script src="../other_common/shapes.js"></script>
+    <script src="../other_common/helpers.js"></script>
+    <script src="wsA_part1.js"></script>
+</body>
+</html>
