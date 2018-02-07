@@ -11,4 +11,15 @@ Shading types:
 
 Bling-Phong (aka modified Phong): Approximation of reflection in Phong, using halfway vector.
 		Rather than calculating the exact reflection from normal and light (r*v), we use norm(l+v)
+
+Drawing-Order of triangles
+	Use RH (rightHand rule)
+	Notice that enabling CULL will skip triangles which have a negative normal vector
+
+Light-Directional vs PointLight
+	The difference is shown in the w-component
+	Point Light 		[ x y z 1]
+	Directional Light 	[ x y z 0]
+	
+
 Implementation of light model in GLSL http://www.sunandblackcat.com/tipFullView.php?l=eng&topicid=30
