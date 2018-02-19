@@ -1,6 +1,10 @@
 What do affine mean (in relation to Affine transformations)
 Cull, the act of ignoring triangles/faces not facing user
 
+w-divide = ???
+
+Homogene coordinates = ???
+
 COP: Center of Projection. Similar to eye? Point with we project objects toward.
 Clipping Plane: Rectangle which is the cut-off point for projections. Similar to a screen.
 
