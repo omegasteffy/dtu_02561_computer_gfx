@@ -1,9 +1,13 @@
 What do affine mean (in relation to Affine transformations)
 Cull, the act of ignoring triangles/faces not facing user
 
-w-divide = ???
+Homogene coordinates = 
+	Coordinates where last component represent scaling?
+	http://glprogramming.com/red/appendixf.html
 
-Homogene coordinates = ???
+w-divide = This referes to what happen upon multiplying with projection matrix. W becomes -z
+	https://www.opengl.org/discussion_boards/showthread.php/153444-perspective-division
+	Look at the projection matrix produced by glFrustum. (see the GL spec). Note that the last row is (0, 0, -1, 0). The result of applying this matrix to an (x,y,z,1) coordinate is that the W component becomes -z, i.e. (x', y', z', -z).
 
 COP: Center of Projection. Similar to eye? Point with we project objects toward.
 Clipping Plane: Rectangle which is the cut-off point for projections. Similar to a screen.
