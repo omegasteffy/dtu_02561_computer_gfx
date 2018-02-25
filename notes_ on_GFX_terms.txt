@@ -5,7 +5,12 @@ Homogene coordinates =
 	Coordinates where last component represent scaling?
 	http://glprogramming.com/red/appendixf.html
 
-w-divide = This referes to what happen upon multiplying with projection matrix. W becomes -z
+Perspective divide:
+	Perspective rendering make sure objects further away appear smaller
+	The illussion of distance is obtained by projecting objects on to an image plane
+	The object size is smaller the furher away (larger Z, x' = x/z) hereby the term perspective divide
+
+w-divide = This referes to what happen upon multiplying with projection matrix. W is set equal to -z	
 	https://www.opengl.org/discussion_boards/showthread.php/153444-perspective-division
 	Look at the projection matrix produced by glFrustum. (see the GL spec). Note that the last row is (0, 0, -1, 0). The result of applying this matrix to an (x,y,z,1) coordinate is that the W component becomes -z, i.e. (x', y', z', -z).
 
